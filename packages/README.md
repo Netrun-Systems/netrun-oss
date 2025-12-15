@@ -18,17 +18,18 @@ Unified, reusable Python packages for the Netrun Systems service portfolio. Thes
 | **Authentication** | [`netrun-auth`](https://pypi.org/project/netrun-auth/) | 1.1.0 | JWT, OAuth2, Azure AD, MFA, Casbin RBAC | **Published** |
 | **Configuration** | [`netrun-config`](https://pypi.org/project/netrun-config/) | 1.1.0 | Pydantic settings with Azure Key Vault, TTL caching, multi-vault | **Published** |
 | **Structured Logging** | [`netrun-logging`](https://pypi.org/project/netrun-logging/) | 1.1.0 | Structlog-based JSON logging with Azure App Insights | **Published** |
-| **CORS Middleware** | `netrun-cors` | 1.0.0 | Enterprise CORS presets for FastAPI | Production |
-| **Database Pooling** | `netrun-db-pool` | 1.0.0 | Async connection pooling, multi-tenant RLS | Production |
-| **Dogfood MCP Server** | `netrun-dogfood` | 1.0.0 | MCP server with 53 tools for Netrun product APIs | Production |
-| **Environment Validation** | `netrun-env` | 1.0.0 | Schema-based env var validation with CLI | Production |
-| **Error Handling** | `netrun-errors` | 1.0.0 | Unified FastAPI exception handling & correlation IDs | Production |
-| **LLM Orchestration** | `netrun-llm` | 1.0.0 | Multi-provider LLM with fallback chains & three-tier cognition | Production |
-| **OAuth Adapters** | `netrun-oauth` | 1.0.0 | 12-platform OAuth adapter factory with token encryption | Production |
-| **RBAC & RLS** | `netrun-rbac` | 1.0.0 | Multi-tenant RBAC with PostgreSQL Row-Level Security | Production |
-| **Testing Fixtures** | `netrun-pytest-fixtures` | 1.0.0 | Reusable pytest fixtures (71% duplication eliminated) | Production |
+| **Error Handling** | [`netrun-errors`](https://pypi.org/project/netrun-errors/) | 1.1.0 | Unified FastAPI exception handling & correlation IDs | **Published** |
+| **CORS Middleware** | [`netrun-cors`](https://pypi.org/project/netrun-cors/) | 1.1.0 | Enterprise CORS presets for FastAPI | **Published** |
+| **Database Pooling** | [`netrun-db-pool`](https://pypi.org/project/netrun-db-pool/) | 1.0.0 | Async connection pooling, multi-tenant RLS | **Published** |
+| **LLM Orchestration** | [`netrun-llm`](https://pypi.org/project/netrun-llm/) | 1.0.0 | Multi-provider LLM with fallback chains & three-tier cognition | **Published** |
+| **Environment Validation** | [`netrun-env`](https://pypi.org/project/netrun-env/) | 1.0.0 | Schema-based env var validation with CLI | **Published** |
+| **Testing Fixtures** | [`netrun-pytest-fixtures`](https://pypi.org/project/netrun-pytest-fixtures/) | 1.0.0 | Reusable pytest fixtures (71% duplication eliminated) | **Published** |
+| **Rate Limiting** | [`netrun-ratelimit`](https://pypi.org/project/netrun-ratelimit/) | 1.0.0 | Token bucket rate limiting with Redis backend | **Published** |
+| **Dogfood MCP Server** | `netrun-dogfood` | 1.0.0 | MCP server with 53 tools for Netrun product APIs | Internal |
+| **OAuth Adapters** | `netrun-oauth` | 1.0.0 | 12-platform OAuth adapter factory with token encryption | Internal |
+| **RBAC & RLS** | `netrun-rbac` | 1.0.0 | Multi-tenant RBAC with PostgreSQL Row-Level Security | Internal |
 | **Physics Simulation** | `optikal-physics-suite` | 1.0.0 | FSO beam propagation, atmospheric optics, space environment | **Ready** |
-| **React UI Components** | `@netrun/ui` | 1.0.0 | State components, design tokens, PdfViewer (npm) | Production |
+| **React UI Components** | `@netrun/ui` | 1.0.0 | State components, design tokens, PdfViewer (npm) | Internal |
 
 ---
 
@@ -898,17 +899,31 @@ All packages are licensed under the **MIT License**. See individual package `LIC
 
 ## Open Source Packages
 
-Three packages are published to PyPI and available as open source:
+All 10 packages are published to PyPI and available as open source:
 
 | Package | PyPI | GitHub | Description |
 |---------|------|--------|-------------|
+| **netrun-auth** | [v1.1.0](https://pypi.org/project/netrun-auth/) | [netrun-oss](https://github.com/Netrun-Systems/netrun-oss) | Casbin RBAC, multi-tenant, FastAPI middleware |
 | **netrun-config** | [v1.1.0](https://pypi.org/project/netrun-config/) | [netrun-oss](https://github.com/Netrun-Systems/netrun-oss) | Azure Key Vault integration, TTL caching, multi-vault |
 | **netrun-logging** | [v1.1.0](https://pypi.org/project/netrun-logging/) | [netrun-oss](https://github.com/Netrun-Systems/netrun-oss) | Structlog backend, async logging, auto-redaction |
-| **netrun-auth** | [v1.1.0](https://pypi.org/project/netrun-auth/) | [netrun-oss](https://github.com/Netrun-Systems/netrun-oss) | Casbin RBAC, multi-tenant, FastAPI middleware |
+| **netrun-errors** | [v1.1.0](https://pypi.org/project/netrun-errors/) | [netrun-oss](https://github.com/Netrun-Systems/netrun-oss) | Unified FastAPI exception handling & correlation IDs |
+| **netrun-cors** | [v1.1.0](https://pypi.org/project/netrun-cors/) | [netrun-oss](https://github.com/Netrun-Systems/netrun-oss) | Enterprise CORS middleware presets for FastAPI |
+| **netrun-db-pool** | [v1.0.0](https://pypi.org/project/netrun-db-pool/) | [netrun-oss](https://github.com/Netrun-Systems/netrun-oss) | Async connection pooling, multi-tenant RLS |
+| **netrun-llm** | [v1.0.0](https://pypi.org/project/netrun-llm/) | [netrun-oss](https://github.com/Netrun-Systems/netrun-oss) | Multi-provider LLM with fallback chains |
+| **netrun-env** | [v1.0.0](https://pypi.org/project/netrun-env/) | [netrun-oss](https://github.com/Netrun-Systems/netrun-oss) | Schema-based env var validation with CLI |
+| **netrun-pytest-fixtures** | [v1.0.0](https://pypi.org/project/netrun-pytest-fixtures/) | [netrun-oss](https://github.com/Netrun-Systems/netrun-oss) | Reusable pytest fixtures (71% duplication eliminated) |
+| **netrun-ratelimit** | [v1.0.0](https://pypi.org/project/netrun-ratelimit/) | [netrun-oss](https://github.com/Netrun-Systems/netrun-oss) | Token bucket rate limiting with Redis backend |
 
 **Install from PyPI:**
 ```bash
-pip install netrun-config==1.1.0 netrun-logging==1.1.0 netrun-auth==1.1.0
+# Core packages
+pip install netrun-auth==1.1.0 netrun-config==1.1.0 netrun-logging==1.1.0
+
+# All 10 packages
+pip install netrun-auth==1.1.0 netrun-config==1.1.0 netrun-logging==1.1.0 \
+    netrun-errors==1.1.0 netrun-cors==1.1.0 netrun-db-pool==1.0.0 \
+    netrun-llm==1.0.0 netrun-env==1.0.0 netrun-pytest-fixtures==1.0.0 \
+    netrun-ratelimit==1.0.0
 ```
 
 **Landing Page:** [netrunsystems.com/open-source](https://netrunsystems.com/open-source)
@@ -924,9 +939,10 @@ pip install netrun-config==1.1.0 netrun-logging==1.1.0 netrun-auth==1.1.0
 | 1.0.2 | 2025-11-29 | Added netrun-dogfood (53-tool MCP server for Netrun product APIs) |
 | 1.1.0 | 2025-12-04 | Published netrun-config, netrun-logging, netrun-auth to PyPI |
 | 1.1.1 | 2025-12-07 | Added optikal-physics-suite (FSO beam propagation, space environment) |
+| 1.2.0 | 2025-12-15 | **Full PyPI Release**: All 10 packages now on PyPI (netrun-errors 1.1.0, netrun-cors 1.1.0, netrun-ratelimit 1.0.0, netrun-db-pool 1.0.0, netrun-llm 1.0.0, netrun-env 1.0.0, netrun-pytest-fixtures 1.0.0) |
 
 ---
 
-**Last Updated:** December 7, 2025
+**Last Updated:** December 15, 2025
 **Maintained By:** Netrun Systems Engineering Team
 **Status:** Production Ready

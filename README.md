@@ -1,21 +1,35 @@
 # Netrun Open Source Libraries
 
-Open source Python libraries from [Netrun Systems](https://netrunsystems.com) - configuration management, structured logging, and authentication/authorization for FastAPI applications.
+Open source Python libraries from [Netrun Systems](https://netrunsystems.com) - 10 production-tested packages for FastAPI applications including authentication, configuration, logging, CORS, rate limiting, database pooling, LLM orchestration, and testing fixtures.
 
 ## Packages
 
 | Package | Version | PyPI | Description |
 |---------|---------|------|-------------|
-| **netrun-config** | 1.1.0 | [PyPI](https://pypi.org/project/netrun-config/) | Configuration management with Azure Key Vault integration |
-| **netrun-logging** | 1.1.0 | [PyPI](https://pypi.org/project/netrun-logging/) | Structured logging with structlog backend |
-| **netrun-auth** | 1.1.0 | [PyPI](https://pypi.org/project/netrun-auth/) | Authentication and Casbin RBAC authorization |
+| **netrun-auth** | 1.1.0 | [PyPI](https://pypi.org/project/netrun-auth/) | Unified authentication library - JWT, OAuth2, Azure AD, Casbin RBAC |
+| **netrun-config** | 1.1.0 | [PyPI](https://pypi.org/project/netrun-config/) | Configuration management with Azure Key Vault, TTL caching, multi-vault |
+| **netrun-logging** | 1.1.0 | [PyPI](https://pypi.org/project/netrun-logging/) | Structured logging with Azure App Insights integration |
+| **netrun-errors** | 1.1.0 | [PyPI](https://pypi.org/project/netrun-errors/) | Unified error handling for FastAPI applications |
+| **netrun-cors** | 1.1.0 | [PyPI](https://pypi.org/project/netrun-cors/) | Enterprise CORS middleware presets for FastAPI |
+| **netrun-db-pool** | 1.0.0 | [PyPI](https://pypi.org/project/netrun-db-pool/) | Async database connection pooling for Netrun services |
+| **netrun-llm** | 1.0.0 | [PyPI](https://pypi.org/project/netrun-llm/) | Multi-provider LLM orchestration with fallback chains |
+| **netrun-env** | 1.0.0 | [PyPI](https://pypi.org/project/netrun-env/) | Schema-based environment variable validator |
+| **netrun-pytest-fixtures** | 1.0.0 | [PyPI](https://pypi.org/project/netrun-pytest-fixtures/) | Unified pytest fixtures - 71% duplication elimination |
+| **netrun-ratelimit** | 1.0.0 | [PyPI](https://pypi.org/project/netrun-ratelimit/) | Distributed rate limiting with token bucket & Redis |
 
 ## Installation
 
 ```bash
-pip install netrun-config==1.1.0
-pip install netrun-logging==1.1.0
-pip install netrun-auth==1.1.0
+# Core packages
+pip install netrun-auth==1.1.0 netrun-config==1.1.0 netrun-logging==1.1.0
+
+# Additional packages
+pip install netrun-errors==1.1.0 netrun-cors==1.1.0
+pip install netrun-db-pool==1.0.0 netrun-llm==1.0.0 netrun-env==1.0.0
+pip install netrun-pytest-fixtures==1.0.0 netrun-ratelimit==1.0.0
+
+# Full suite with optional dependencies
+pip install netrun-auth[all]==1.1.0 netrun-config[all]==1.1.0 netrun-llm[all]==1.0.0
 ```
 
 ## About These Libraries
