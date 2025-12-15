@@ -1,0 +1,115 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "netrun-ratelimit"
+version = "1.0.0"
+description = "Distributed rate limiting with token bucket algorithm and Redis backend"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "Daniel Garza", email = "daniel@netrunsystems.com"}
+]
+maintainers = [
+    {name = "Netrun Systems", email = "engineering@netrunsystems.com"}
+]
+keywords = [
+    "rate-limiting",
+    "token-bucket",
+    "redis",
+    "fastapi",
+    "middleware",
+    "api",
+    "throttling",
+    "distributed"
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Framework :: FastAPI",
+    "Topic :: Internet :: WWW/HTTP :: HTTP Servers",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Typing :: Typed"
+]
+requires-python = ">=3.10"
+dependencies = [
+    "pydantic>=2.0.0,<3.0.0",
+    "pydantic-settings>=2.0.0,<3.0.0",
+]
+
+[project.optional-dependencies]
+redis = [
+    "redis>=5.0.0,<6.0.0",
+]
+fastapi = [
+    "fastapi>=0.100.0",
+    "starlette>=0.27.0",
+]
+all = [
+    "redis>=5.0.0,<6.0.0",
+    "fastapi>=0.100.0",
+    "starlette>=0.27.0",
+]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "pytest-cov>=4.0.0",
+    "fakeredis>=2.20.0",
+    "httpx>=0.25.0",
+    "black>=23.0.0",
+    "ruff>=0.1.0",
+    "mypy>=1.0.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/Netrun-Systems/netrun-oss"
+Documentation = "https://github.com/Netrun-Systems/netrun-oss/tree/main/packages/netrun-ratelimit"
+Repository = "https://github.com/Netrun-Systems/netrun-oss"
+Issues = "https://github.com/Netrun-Systems/netrun-oss/issues"
+Changelog = "https://github.com/Netrun-Systems/netrun-oss/blob/main/packages/netrun-ratelimit/CHANGELOG.md"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["netrun_ratelimit*"]
+
+[tool.setuptools.package-data]
+netrun_ratelimit = ["py.typed"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+addopts = "-v --tb=short"
+
+[tool.black]
+line-length = 88
+target-version = ["py310", "py311", "py312"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+select = ["E", "F", "W", "I", "N", "UP", "B", "C4"]
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+
+[tool.coverage.run]
+source = ["netrun_ratelimit"]
+branch = true
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise NotImplementedError",
+    "if TYPE_CHECKING:",
+]
