@@ -215,27 +215,24 @@ class TestRedisBackend:
         with pytest.raises(ValueError, match="Either redis_url or redis_client"):
             RedisBackend()
 
-    @pytest.mark.skipif(
-        True,  # Skip unless fakeredis available
-        reason="Requires fakeredis for testing",
-    )
     def test_consume_with_fakeredis(self):
         """Test consume with fakeredis."""
-        try:
-            import fakeredis
-            from netrun_ratelimit import RedisBackend
+        pytest.importorskip("fakeredis")
 
-            client = fakeredis.FakeRedis()
-            backend = RedisBackend(redis_client=client)
+        import fakeredis
+        from netrun_ratelimit import RedisBackend
 
-            result = backend.consume(
-                key="test",
-                tokens=1,
-                rate=10,
-                period=60,
-                burst=10,
-                now=1000.0,
-            )
-            assert result.allowed is True
-        except ImportError:
-            pytest.skip("fakeredis not installed")
+        # Create FakeRedis with Lua support enabled
+        client = fakeredis.FakeStrictRedis(decode_responses=False)
+        backend = RedisBackend(redis_client=client)
+
+        result = backend.consume(
+            key="test",
+            tokens=1,
+            rate=10,
+            period=60,
+            burst=10,
+            now=1000.0,
+        )
+        assert result.allowed is True
+        assert result.remaining == 9

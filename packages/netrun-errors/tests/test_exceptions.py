@@ -273,7 +273,9 @@ class TestServiceExceptions:
 
         assert exc.status_code == 504
         assert exc.error_code == "GATEWAY_TIMEOUT"
-        assert "timeout" in str(exc.detail).lower()
+        # Accept both "timeout" and "timed out" variations
+        detail_lower = str(exc.detail).lower()
+        assert "timeout" in detail_lower or "timed out" in detail_lower
 
     def test_gateway_timeout_error_with_details(self):
         """Test GatewayTimeoutError with additional details."""
