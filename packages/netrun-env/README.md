@@ -1,0 +1,381 @@
+# Netrun Environment Validator (Service #69)
+
+Schema-based environment variable validator with comprehensive security checks for .env files across development, staging, and production environments.
+
+## Features
+
+- **Schema-Based Validation**: Generate and validate against JSON schemas
+- **Security Enforcement**:
+  - Minimum secret length requirements (32 chars)
+  - JWT algorithm whitelisting (RS256/RS384/RS512/ES256 only)
+  - HTTPS enforcement in production/staging
+  - Secret strength validation
+  - Placeholder detection
+- **Type Inference**: Automatic detection of URLs, emails, integers, booleans, secrets
+- **Environment Comparison**: Diff two environment files with secret masking
+- **CLI Interface**: Simple command-line tool for all operations
+
+## Installation
+
+```bash
+# Install from source
+cd Service_69_Unified_Env_Validator
+pip install -e .
+
+# Install with development dependencies
+pip install -e ".[dev]"
+```
+
+## Quick Start
+
+### 1. Generate Schema from Example
+
+```bash
+# Generate schema from .env.example
+netrun-env generate-schema --from .env.example --out .env.schema.json
+```
+
+**Example .env.example:**
+```env
+# Database
+DATABASE_URL=postgresql://user:password@localhost:5432/dbname
+DATABASE_POOL_SIZE=10
+
+# Security
+JWT_SECRET_KEY=[SECRET_KEY_HERE]
+JWT_ALGORITHM=RS256
+
+# API
+API_BASE_URL=https://api.example.com
+API_TIMEOUT=30
+DEBUG=false
+```
+
+**Generated schema (.env.schema.json):**
+```json
+{
+  "$schema": "https://netrunsystems.com/env-schema/v1",
+  "version": "1.0",
+  "variables": {
+    "DATABASE_URL": {
+      "type": "url",
+      "required": true,
+      "protocols": ["postgresql", "postgresql+asyncpg"],
+      "example": "postgresql://user:password@localhost:5432/dbname"
+    },
+    "JWT_SECRET_KEY": {
+      "type": "secret",
+      "required": true,
+      "minLength": 32,
+      "example": "[SECRET_VALUE]"
+    },
+    "JWT_ALGORITHM": {
+      "type": "string",
+      "required": true,
+      "example": "RS256"
+    }
+  }
+}
+```
+
+### 2. Validate Environment
+
+```bash
+# Validate .env against schema
+netrun-env validate --env .env --schema .env.schema.json
+
+# Validate with specific security level
+netrun-env validate --env .env.production --security-level production
+
+# Strict mode (treat warnings as errors)
+netrun-env validate --env .env --schema .env.schema.json --strict
+```
+
+**Example validation output:**
+```
+Validating: .env
+✓ Validation passed
+
+Warnings (1):
+  - Secret 'JWT_SECRET_KEY' appears to contain a placeholder value
+```
+
+### 3. Compare Environments
+
+```bash
+# Compare staging vs production
+netrun-env diff --env1 .env.staging --env2 .env.production
+
+# JSON output format
+netrun-env diff --env1 .env.example --env2 .env --format json
+
+# Show unmasked secrets (use with caution)
+netrun-env diff --env1 .env.staging --env2 .env.production --no-mask
+
+# Fail if differences found (useful in CI)
+netrun-env diff --env1 .env.example --env2 .env --fail-on-diff
+```
+
+**Example diff output:**
+```
+Environment Comparison Report
+============================================================
+Baseline: .env.staging
+Target:   .env.production
+============================================================
+
+Missing in target (1):
+  - DEBUG_MODE
+
+Added in target (1):
+  + SENTRY_DSN
+
+Changed values (2):
+  ~ DATABASE_URL
+      - postgresql://localhost:5432/staging
+      + postgresql://production-db:5432/prod
+  ~ JWT_SECRET_KEY
+      - ab...yz
+      + xy...ba
+```
+
+## Security Features
+
+### Secret Strength Validation
+
+```bash
+# This will FAIL validation
+JWT_SECRET_KEY=short
+
+# Error: Secret 'JWT_SECRET_KEY' must be at least 32 characters (current: 5 characters)
+```
+
+### JWT Algorithm Whitelisting
+
+```bash
+# This will FAIL validation
+JWT_ALGORITHM=HS256
+
+# Error: Forbidden JWT algorithm 'HS256'. Use asymmetric algorithms: ES256, ES384, ES512, RS256, RS384, RS512
+```
+
+### HTTPS Enforcement
+
+```bash
+# In production/staging, this will FAIL
+API_URL=http://api.example.com
+
+# Error: URL 'API_URL' must use HTTPS in production
+```
+
+### Placeholder Detection
+
+```bash
+# This will generate a WARNING
+DATABASE_PASSWORD=[PASSWORD_HERE]
+
+# Warning: Secret 'DATABASE_PASSWORD' appears to contain a placeholder value
+```
+
+## Schema Format
+
+Schemas are JSON files with the following structure:
+
+```json
+{
+  "$schema": "https://netrunsystems.com/env-schema/v1",
+  "version": "1.0",
+  "variables": {
+    "VARIABLE_NAME": {
+      "type": "string|integer|boolean|url|secret|email|path",
+      "required": true|false,
+      "minLength": 32,
+      "min": 0,
+      "max": 100,
+      "protocols": ["https"],
+      "allowed_values": ["true", "false"],
+      "example": "example_value"
+    }
+  }
+}
+```
+
+### Supported Types
+
+- **string**: Generic string value
+- **integer**: Numeric value (validated as integer)
+- **boolean**: Boolean value (true/false/yes/no/1/0)
+- **url**: URL with protocol validation
+- **secret**: Sensitive value with minimum length requirement
+- **email**: Email address with format validation
+- **path**: File system path
+
+## CI/CD Integration
+
+### GitHub Actions Example
+
+```yaml
+name: Environment Validation
+
+on: [push, pull_request]
+
+jobs:
+  validate-env:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Install netrun-env
+        run: pip install netrun-env
+
+      - name: Validate environment schema
+        run: |
+          netrun-env validate \
+            --env .env.example \
+            --schema .env.schema.json \
+            --security-level staging
+
+      - name: Check environment differences
+        run: |
+          netrun-env diff \
+            --env1 .env.example \
+            --env2 .env.production.example \
+            --fail-on-diff
+```
+
+### Pre-commit Hook
+
+```yaml
+# .pre-commit-config.yaml
+repos:
+  - repo: local
+    hooks:
+      - id: validate-env
+        name: Validate .env files
+        entry: netrun-env validate --env .env.example --schema .env.schema.json
+        language: system
+        files: '\.env.*'
+```
+
+## Development
+
+### Setup Development Environment
+
+```bash
+# Clone repository
+git clone https://github.com/netrunsystems/netrun-service-library
+cd Netrun_Service_Library_v2/Service_69_Unified_Env_Validator
+
+# Install in editable mode with dev dependencies
+pip install -e ".[dev]"
+```
+
+### Run Tests
+
+```bash
+# Run all tests with coverage
+pytest
+
+# Run specific test file
+pytest tests/test_validator.py
+
+# Run with verbose output
+pytest -v
+
+# Generate HTML coverage report
+pytest --cov-report=html
+open htmlcov/index.html
+```
+
+### Code Quality
+
+```bash
+# Format code with black
+black netrun_env tests
+
+# Lint with ruff
+ruff netrun_env tests
+
+# Type check with mypy
+mypy netrun_env
+```
+
+## API Usage
+
+You can also use netrun-env as a Python library:
+
+```python
+from netrun_env import EnvValidator, SchemaGenerator, EnvDiff
+from netrun_env.security import SecurityLevel
+from pathlib import Path
+
+# Generate schema
+generator = SchemaGenerator()
+schema = generator.generate_schema(Path(".env.example"))
+generator.save_schema(schema, Path(".env.schema.json"))
+
+# Validate environment
+validator = EnvValidator(security_level=SecurityLevel.PRODUCTION)
+result = validator.validate_file(Path(".env"), Path(".env.schema.json"))
+
+if result.is_valid:
+    print("✓ Validation passed")
+else:
+    print("✗ Validation failed")
+    for error in result.errors:
+        print(f"  - {error}")
+
+# Compare environments
+differ = EnvDiff(mask_secrets=True)
+diff = differ.compare_files(Path(".env.staging"), Path(".env.production"))
+print(diff)
+```
+
+## Configuration
+
+### Security Levels
+
+- **development**: Most permissive (allows HTTP, relaxed secret requirements)
+- **staging**: Moderate (requires HTTPS, enforces secret length)
+- **production**: Strictest (requires HTTPS, enforces all security rules)
+
+### Secret Detection Patterns
+
+Variables matching these patterns are treated as secrets:
+- `*_SECRET*`
+- `*_KEY`
+- `*_TOKEN`
+- `*_PASSWORD`
+- `*_CREDENTIAL*`
+- `*_API_KEY`
+
+### Allowed JWT Algorithms
+
+Production environments only allow asymmetric algorithms:
+- RS256, RS384, RS512 (RSA)
+- ES256, ES384, ES512 (ECDSA)
+
+**Forbidden**: HS256, HS384, HS512, none
+
+## License
+
+MIT License - Copyright (c) 2025 Netrun Systems
+
+## Support
+
+- Website: https://netrunsystems.com
+- Email: support@netrunsystems.com
+- Issues: https://github.com/netrunsystems/netrun-service-library/issues
+
+## Related Services
+
+- **Service #61**: Unified Logging Service
+- **Service #54**: Meridian Distributed Tracing
+- **Service #29**: Secrets Management Service
+
+---
+
+**Version**: 1.0.0
+**Created**: November 2025
+**Author**: Netrun Systems
+**Part of**: Netrun Service Library v2

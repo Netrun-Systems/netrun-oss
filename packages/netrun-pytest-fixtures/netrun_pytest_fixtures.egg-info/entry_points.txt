@@ -1,0 +1,2 @@
+[pytest11]
+netrun_fixtures = netrun_pytest_fixtures

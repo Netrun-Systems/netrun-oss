@@ -1,0 +1,17 @@
+# Development dependencies for netrun-db-pool v1.0.0
+-r requirements.txt
+
+# Testing
+pytest>=8.0.0
+pytest-asyncio>=0.23.0
+pytest-cov>=4.1.0
+aiosqlite>=0.20.0
+
+# FastAPI integration (optional)
+fastapi>=0.110.0
+uvicorn>=0.29.0
+
+# Code quality
+black>=24.0.0
+ruff>=0.3.0
+mypy>=1.9.0

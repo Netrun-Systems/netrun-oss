@@ -1,0 +1,5 @@
+include LICENSE
+include README.md
+include py.typed
+recursive-include netrun_pytest_fixtures *.py *.pyi
+recursive-include tests *.py

@@ -1,0 +1,2 @@
+[console_scripts]
+netrun-env = netrun_env.cli:main
