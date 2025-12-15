@@ -89,15 +89,17 @@ class EnvDiff:
         re.IGNORECASE
     )
 
-    def __init__(self, mask_secrets: bool = True):
+    def __init__(self, mask_secrets: bool = True, quiet: bool = False):
         """
         Initialize environment diff tool.
 
         Args:
             mask_secrets: Whether to mask secret values in output
+            quiet: Suppress logging output (useful for JSON output)
         """
         self.schema_generator = SchemaGenerator()
         self.mask_secrets = mask_secrets
+        self.quiet = quiet
 
     def mask_value(self, var_name: str, value: str) -> str:
         """
@@ -131,16 +133,19 @@ class EnvDiff:
         Returns:
             DiffResult with comparison details
         """
-        _log("info", f"Comparing environment files", file1=str(file1), file2=str(file2))
+        if not self.quiet:
+            _log("info", f"Comparing environment files", file1=str(file1), file2=str(file2))
         # Parse both files
         vars1 = self.schema_generator.parse_env_file(file1)
         vars2 = self.schema_generator.parse_env_file(file2)
-        _log("debug", f"Parsed files", vars1_count=len(vars1), vars2_count=len(vars2))
+        if not self.quiet:
+            _log("debug", f"Parsed files", vars1_count=len(vars1), vars2_count=len(vars2))
 
         result = self.compare_variables(vars1, vars2)
-        _log("info", f"Comparison complete", has_differences=result.has_differences(),
-             missing=len(result.missing_in_target), added=len(result.added_in_target),
-             changed=len(result.changed_values))
+        if not self.quiet:
+            _log("info", f"Comparison complete", has_differences=result.has_differences(),
+                 missing=len(result.missing_in_target), added=len(result.added_in_target),
+                 changed=len(result.changed_values))
         return result
 
     def compare_variables(

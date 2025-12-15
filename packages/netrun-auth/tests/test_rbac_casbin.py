@@ -7,6 +7,7 @@ Date: 2025-12-03
 """
 
 import pytest
+import pytest_asyncio
 from netrun_auth.types import User
 
 # Skip all tests if casbin not installed
@@ -16,7 +17,7 @@ from netrun_auth.rbac_casbin import CasbinRBACManager
 from netrun_auth.exceptions import PermissionDeniedError
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def casbin_manager():
     """Create Casbin RBAC manager with memory adapter."""
     manager = CasbinRBACManager(multi_tenant=False)
@@ -24,7 +25,7 @@ async def casbin_manager():
     return manager
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def casbin_manager_tenant():
     """Create Casbin RBAC manager with multi-tenant support."""
     manager = CasbinRBACManager(multi_tenant=True)

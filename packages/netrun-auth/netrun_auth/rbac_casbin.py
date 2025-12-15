@@ -20,11 +20,11 @@ from pathlib import Path
 
 try:
     import casbin
-    from casbin import Enforcer
+    from casbin import AsyncEnforcer
     _HAS_CASBIN = True
 except ImportError:
     _HAS_CASBIN = False
-    Enforcer = None  # type: ignore
+    AsyncEnforcer = None  # type: ignore
 
 from .types import User
 from .exceptions import PermissionDeniedError, RoleNotFoundError
@@ -93,7 +93,7 @@ class CasbinRBACManager:
         )
         self._policy_path = policy_path
         self._adapter = adapter
-        self._enforcer: Optional[Enforcer] = None
+        self._enforcer: Optional[AsyncEnforcer] = None
 
         logger.info(
             f"Initialized CasbinRBACManager (multi_tenant={multi_tenant}, "
@@ -108,13 +108,13 @@ class CasbinRBACManager:
         """
         if self._adapter:
             # Use provided adapter
-            self._enforcer = casbin.Enforcer(self._model_path, self._adapter)
+            self._enforcer = casbin.AsyncEnforcer(self._model_path, self._adapter)
         elif self._policy_path:
             # Use file-based adapter
-            self._enforcer = casbin.Enforcer(self._model_path, self._policy_path)
+            self._enforcer = casbin.AsyncEnforcer(self._model_path, self._policy_path)
         else:
             # Use memory adapter (no persistence)
-            self._enforcer = casbin.Enforcer(self._model_path)
+            self._enforcer = casbin.AsyncEnforcer(self._model_path)
 
         # Load policy from adapter if available
         if self._adapter:
@@ -151,10 +151,11 @@ class CasbinRBACManager:
             if not tenant_id:
                 raise ValueError("tenant_id is required for multi-tenant mode")
             # Format: enforce(subject, domain, object, action)
-            return await self._enforcer.enforce(user_id, tenant_id, resource, action)
+            # Note: enforce() is synchronous even in AsyncEnforcer
+            return self._enforcer.enforce(user_id, tenant_id, resource, action)
         else:
             # Format: enforce(subject, object, action)
-            return await self._enforcer.enforce(user_id, resource, action)
+            return self._enforcer.enforce(user_id, resource, action)
 
     async def add_role_for_user(
         self,
@@ -179,11 +180,11 @@ class CasbinRBACManager:
         if self.multi_tenant:
             if not tenant_id:
                 raise ValueError("tenant_id is required for multi-tenant mode")
-            # Format: add_grouping_policy(subject, role, domain)
-            result = await self._enforcer.add_grouping_policy(user_id, role, tenant_id)
+            # Use domain-specific method
+            result = await self._enforcer.add_role_for_user_in_domain(user_id, role, tenant_id)
         else:
-            # Format: add_grouping_policy(subject, role)
-            result = await self._enforcer.add_grouping_policy(user_id, role)
+            # Use standard method
+            result = await self._enforcer.add_role_for_user(user_id, role)
 
         if result:
             logger.info(f"Added role '{role}' to user '{user_id}' (tenant={tenant_id})")
@@ -213,9 +214,9 @@ class CasbinRBACManager:
         if self.multi_tenant:
             if not tenant_id:
                 raise ValueError("tenant_id is required for multi-tenant mode")
-            result = await self._enforcer.remove_grouping_policy(user_id, role, tenant_id)
+            result = await self._enforcer.delete_role_for_user_in_domain(user_id, role, tenant_id)
         else:
-            result = await self._enforcer.remove_grouping_policy(user_id, role)
+            result = await self._enforcer.delete_role_for_user(user_id, role)
 
         if result:
             logger.info(f"Removed role '{role}' from user '{user_id}' (tenant={tenant_id})")
@@ -244,7 +245,7 @@ class CasbinRBACManager:
             if not tenant_id:
                 raise ValueError("tenant_id is required for multi-tenant mode")
             # Get roles for user in specific domain
-            roles = await self._enforcer.get_roles_for_user(user_id, tenant_id)
+            roles = await self._enforcer.get_roles_for_user_in_domain(user_id, tenant_id)
         else:
             roles = await self._enforcer.get_roles_for_user(user_id)
 
@@ -381,7 +382,7 @@ class CasbinRBACManager:
         if self.multi_tenant:
             if not tenant_id:
                 raise ValueError("tenant_id is required for multi-tenant mode")
-            users = await self._enforcer.get_users_for_role(role, tenant_id)
+            users = await self._enforcer.get_users_for_role_in_domain(role, tenant_id)
         else:
             users = await self._enforcer.get_users_for_role(role)
 
@@ -421,7 +422,9 @@ class CasbinRBACManager:
     async def clear_cache(self) -> None:
         """Clear internal Casbin cache."""
         if self._enforcer:
-            await self._enforcer.load_policy()
+            # Only reload policy if using an adapter
+            if self._adapter:
+                await self._enforcer.load_policy()
             logger.info("Cleared Casbin cache")
 
     # Compatibility methods for netrun-auth API
@@ -473,11 +476,11 @@ class CasbinRBACManager:
 
         return has_permission
 
-    def get_enforcer(self) -> Optional[Enforcer]:
+    def get_enforcer(self) -> Optional[AsyncEnforcer]:
         """
         Get underlying Casbin enforcer for advanced operations.
 
         Returns:
-            Casbin Enforcer instance or None if not initialized
+            Casbin AsyncEnforcer instance or None if not initialized
         """
         return self._enforcer

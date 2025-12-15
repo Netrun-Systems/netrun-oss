@@ -82,7 +82,7 @@ where = ["."]
 include = ["netrun_db_pool*"]
 
 [tool.pytest.ini_options]
-minversion = "8.0"
+minversion = "7.0"
 testpaths = ["tests"]
 asyncio_mode = "auto"
 addopts = [
@@ -92,6 +92,9 @@ addopts = [
     "--cov-report=term-missing",
     "--cov-report=html",
     "--cov-report=xml",
+]
+markers = [
+    "integration: marks tests as integration tests (deselect with '-m \"not integration\"')",
 ]
 
 [tool.coverage.run]

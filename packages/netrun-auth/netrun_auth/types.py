@@ -134,11 +134,24 @@ class User(BaseModel):
                 # User can read users
                 pass
         """
+        # Check if enforcer uses domain-based model (multi-tenant)
+        # Domain models have request definition: r = sub, dom, obj, act
+        # Standard models have: r = sub, obj, act
+        model = enforcer.get_model()
+        request_def = model.model.get("r", {}).get("r", {})
+        tokens = request_def.tokens if hasattr(request_def, 'tokens') else []
+
+        # Determine if this is a domain (multi-tenant) model
+        # Tokens are prefixed with 'r_', so check for 'r_dom' in position 1
+        is_domain_model = len(tokens) == 4 and tokens[1] == 'r_dom'
+
         tenant = tenant_id or self.organization_id
-        if tenant:
-            return await enforcer.enforce(self.user_id, tenant, resource, action)
+
+        # Note: enforce() is synchronous even in AsyncEnforcer
+        if is_domain_model and tenant:
+            return enforcer.enforce(self.user_id, tenant, resource, action)
         else:
-            return await enforcer.enforce(self.user_id, resource, action)
+            return enforcer.enforce(self.user_id, resource, action)
 
 
 class AuthContext(BaseModel):

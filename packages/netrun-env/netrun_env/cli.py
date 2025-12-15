@@ -214,8 +214,8 @@ def diff(
 
       netrun-env diff --env1 .env.example --env2 .env --format json --no-mask
     """
-    # Create diff tool
-    differ = EnvDiff(mask_secrets=not no_mask)
+    # Create diff tool (suppress logging for JSON output)
+    differ = EnvDiff(mask_secrets=not no_mask, quiet=(format == 'json'))
 
     # Generate report
     report = differ.generate_report(env1, env2, output_format=format)

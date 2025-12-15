@@ -67,11 +67,10 @@ async def netrun_exception_handler(
 
     # Log error with correlation ID (structured logging if netrun-logging available)
     _log_error(
-        "netrun_exception",
+        f"netrun_exception: {exc.message}",
         level="error",
         correlation_id=exc.correlation_id,
         error_code=exc.error_code,
-        message=exc.message,
         status_code=exc.status_code,
         path=str(request.url.path),
         method=request.method,
@@ -165,12 +164,11 @@ async def http_exception_handler(
     }
 
     _log_error(
-        "http_exception",
+        f"http_exception: {message}",
         level="error",
         exc_info=(status_code >= 500),
         correlation_id=correlation_id,
         status_code=status_code,
-        message=message,
         path=str(request.url.path),
         method=request.method,
     )

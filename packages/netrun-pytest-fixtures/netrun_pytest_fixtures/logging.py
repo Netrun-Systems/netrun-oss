@@ -323,8 +323,17 @@ def mock_log_handler():
     """
     from unittest.mock import MagicMock
 
+    # Create a mock handler that properly integrates with logging system
     handler = MagicMock(spec=logging.Handler)
     handler.level = logging.DEBUG
+
+    # Set up the handle method to call emit (this is what logging.Handler.handle does)
+    def handle_side_effect(record):
+        if record.levelno >= handler.level:
+            handler.emit(record)
+
+    handler.handle.side_effect = handle_side_effect
+
     return handler
 
 

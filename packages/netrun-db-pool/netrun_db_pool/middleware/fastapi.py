@@ -2,6 +2,7 @@
 
 from typing import AsyncGenerator, Callable
 
+from fastapi import Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from netrun_db_pool.pool import AsyncDatabasePool
