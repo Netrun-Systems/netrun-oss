@@ -1,0 +1,156 @@
+site_name: netrun-auth Documentation
+site_description: Unified authentication library for Netrun Systems portfolio
+site_author: Netrun Systems
+site_url: https://netrun-auth.readthedocs.io/
+repo_url: https://github.com/netrunsystems/netrun-service-library-v2
+repo_name: netrun-auth
+docs_dir: docs
+site_dir: site
+
+# Theme configuration
+theme:
+  name: material
+  logo: https://netrunsystems.com/assets/logo.png
+  favicon: https://netrunsystems.com/assets/favicon.ico
+  palette:
+    - scheme: light
+      primary: deep purple
+      accent: purple
+      toggle:
+        icon: material/lightbulb-outline
+        name: Switch to dark mode
+    - scheme: dark
+      primary: deep purple
+      accent: purple
+      toggle:
+        icon: material/lightbulb
+        name: Switch to light mode
+
+  features:
+    - navigation.instant
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.indexes
+    - navigation.top
+    - toc.follow
+    - toc.sticky
+    - content.code.copy
+    - content.code.select
+    - content.code.annotate
+    - content.tabs.link
+    - content.tooltips
+    - search.suggest
+    - search.highlight
+    - search.share
+
+# Plugins
+plugins:
+  - search:
+      lang:
+        - en
+  - minify:
+      minify_html: true
+      minify_css: true
+      minify_js: true
+  - macros:
+      include_markdown: true
+
+# Extensions
+markdown_extensions:
+  - pymdownx.highlight:
+      use_pygments: true
+      anchor_linenums: true
+      line_spans: __span
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+        - name: python
+          class: language-python
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+      slugify: !!python/object:pymdownx.slugs:slugify
+        case: lower
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:pymdownx.emoji.twemoji
+      emoji_generator: !!python/name:pymdownx.emoji.to_svg
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.caret
+  - pymdownx.mark
+  - pymdownx.tilde
+  - pymdownx.smartsymbols
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+      permalink_class: header-link
+      title: Table of contents
+      toc_depth: 3
+
+# Navigation
+nav:
+  - Home: index.md
+
+  - Getting Started:
+      - Installation: installation.md
+      - Quick Start: getting-started.md
+
+  - API Reference:
+      - JWT Manager: api/jwt.md
+      - Middleware: api/middleware.md
+      - Dependencies: api/dependencies.md
+      - RBAC: api/rbac.md
+      - Password Manager: api/password.md
+      - Exceptions: api/exceptions.md
+
+  - Integrations:
+      - Azure AD: integrations/azure-ad.md
+      - OAuth 2.0: integrations/oauth.md
+
+  - Security:
+      - Best Practices: security/best-practices.md
+      - Compliance: security/compliance.md
+
+  - Examples:
+      - Complete FastAPI App: examples/fastapi-app.md
+      - Multi-Tenant Setup: examples/multi-tenant.md
+
+  - About:
+      - License: about/license.md
+      - Changelog: about/changelog.md
+
+# Extra configuration
+extra:
+  version: 1.0.0
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/netrunsystems
+    - icon: fontawesome/brands/twitter
+      link: https://twitter.com/netrunsystems
+  generator: false
+
+# Footer
+extra_css:
+  - stylesheets/extra.css
+
+# Footer text
+footer:
+  - Copyright &copy; 2025 Netrun Systems. All rights reserved.
+  - Version 1.0.0 | Service #59 Unified Authentication
+
+# Build settings
+strict: true
+dev_addr: 127.0.0.1:8000

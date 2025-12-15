@@ -1,0 +1,10 @@
+include LICENSE
+include README.md
+include requirements.txt
+recursive-include netrun_logging *.py
+recursive-include examples *.py
+recursive-exclude tests *
+recursive-exclude __pycache__ *
+recursive-exclude *.pyc *
+global-exclude *.coverage
+global-exclude .git*

@@ -1,0 +1,15 @@
+include README.md
+include LICENSE
+include CHANGELOG.md
+include requirements.txt
+include requirements-dev.txt
+recursive-include examples *.py
+recursive-include tests *.py
+recursive-include netrun_auth *.py *.pyi
+recursive-exclude * __pycache__
+recursive-exclude * *.py[co]
+exclude .coverage
+exclude coverage.xml
+exclude .gitignore
+prune .git
+prune .github

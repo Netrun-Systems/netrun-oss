@@ -1,0 +1,48 @@
+site_name: netrun-logging
+site_description: Unified structured logging with Azure App Insights integration
+site_author: Netrun Systems
+site_url: https://netrun-logging.readthedocs.io
+
+repo_name: netrun-services/netrun-logging
+repo_url: https://github.com/netrun-services/netrun-logging
+
+theme:
+  name: material
+  palette:
+    primary: indigo
+    accent: indigo
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - toc.integrate
+    - search.suggest
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - Configuration: configuration.md
+  - API Reference:
+    - Overview: api/index.md
+    - configure_logging: api/configure_logging.md
+    - get_logger: api/get_logger.md
+    - Correlation ID: api/correlation.md
+    - Log Context: api/context.md
+    - JSON Formatter: api/json_formatter.md
+    - Middleware: api/middleware.md
+  - Examples:
+    - Basic Usage: examples/basic.md
+    - FastAPI Integration: examples/fastapi.md
+    - Azure App Insights: examples/azure.md
+  - Changelog: changelog.md
+
+plugins:
+  - search
+
+markdown_extensions:
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - pymdownx.tabbed
+  - admonition
+  - codehilite
+  - toc:
+      permalink: true

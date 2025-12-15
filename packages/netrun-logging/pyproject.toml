@@ -1,0 +1,71 @@
+[build-system]
+requires = ["setuptools>=65.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "netrun-logging"
+version = "1.2.0"
+description = "Unified structured logging service with Azure App Insights integration"
+readme = "README.md"
+requires-python = ">=3.9"
+license = "MIT"
+authors = [
+    {name = "Daniel Garza", email = "daniel@netrunsystems.com"}
+]
+keywords = ["logging", "structured-logging", "azure", "fastapi", "correlation-id"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: System :: Logging",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+
+dependencies = [
+    "structlog>=24.0.0",
+    "azure-monitor-opentelemetry>=1.0.0",
+    "python-json-logger>=2.0.0",
+    "fastapi>=0.100.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "mypy>=1.0.0",
+    "ruff>=0.1.0",
+    "bandit>=1.7.0",
+]
+
+[project.urls]
+Homepage = "https://netrunsystems.com"
+Repository = "https://github.com/netrun-services/netrun-logging"
+Documentation = "https://netrun-logging.readthedocs.io"
+Changelog = "https://github.com/netrun-services/netrun-logging/blob/main/CHANGELOG.md"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["netrun_logging*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+addopts = "--cov=netrun_logging --cov-report=html --cov-report=term"
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+select = ["E", "F", "I", "N", "W"]
+ignore = ["E501"]

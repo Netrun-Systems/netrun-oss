@@ -1,0 +1,4 @@
+pydantic>=2.0.0
+pydantic-settings>=2.0.0
+azure-identity>=1.15.0
+azure-keyvault-secrets>=4.8.0
