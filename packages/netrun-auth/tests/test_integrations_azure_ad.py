@@ -18,12 +18,12 @@ import pytest
 from unittest.mock import Mock, MagicMock, patch, AsyncMock
 from datetime import datetime, timedelta
 
-from netrun_auth.integrations.azure_ad import (
+from netrun.auth.integrations.azure_ad import (
     AzureADConfig,
     AzureADClient,
     AzureADMultiTenantClient,
 )
-from netrun_auth.core.exceptions import (
+from netrun.auth.core.exceptions import (
     TokenValidationError,
     AuthenticationError,
 )

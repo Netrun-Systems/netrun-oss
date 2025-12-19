@@ -19,7 +19,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from datetime import datetime, timezone, timedelta
 import jwt as pyjwt
 
-from netrun_auth.integrations.azure_ad import (
+from netrun.auth.integrations.azure_ad import (
     AzureADConfig,
     AzureADClient,
     AzureADMultiTenantClient,
@@ -27,7 +27,7 @@ from netrun_auth.integrations.azure_ad import (
     initialize_azure_ad,
     get_current_user_azure,
 )
-from netrun_auth.core.exceptions import AuthenticationError, TokenValidationError
+from netrun.auth.core.exceptions import AuthenticationError, TokenValidationError
 
 
 @pytest.fixture
@@ -638,7 +638,7 @@ class TestAzureIntegrationHelpers:
     def test_get_azure_ad_client_not_initialized(self):
         """Should raise error if not initialized."""
         # Reset global client
-        import netrun_auth.integrations.azure_ad as azure_module
+        import netrun.auth.integrations.azure_ad as azure_module
         azure_module._azure_ad_client = None
 
         with pytest.raises(RuntimeError) as exc_info:

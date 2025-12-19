@@ -1,18 +1,18 @@
 [build-system]
-requires = ["setuptools>=65.0", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling>=1.21.0"]
+build-backend = "hatchling.build"
 
 [project]
 name = "netrun-logging"
-version = "1.2.0"
-description = "Unified structured logging service with Azure App Insights integration"
+version = "2.0.0"
+description = "Unified structured logging service with Azure App Insights integration and namespace packaging"
 readme = "README.md"
 requires-python = ">=3.9"
-license = "MIT"
+license = {text = "MIT"}
 authors = [
     {name = "Daniel Garza", email = "daniel@netrunsystems.com"}
 ]
-keywords = ["logging", "structured-logging", "azure", "fastapi", "correlation-id"]
+keywords = ["logging", "structured-logging", "azure", "fastapi", "correlation-id", "namespace"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
@@ -33,9 +33,22 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+errors = [
+    "netrun-errors>=2.0.0",
+]
+config = [
+    "netrun-config>=2.0.0",
+]
+auth = [
+    "netrun-auth>=2.0.0",
+]
+all = [
+    "netrun-logging[errors,config,auth]",
+]
 dev = [
     "pytest>=7.0.0",
     "pytest-cov>=4.0.0",
+    "pytest-asyncio>=0.21.0",
     "mypy>=1.0.0",
     "ruff>=0.1.0",
     "bandit>=1.7.0",
@@ -47,16 +60,23 @@ Repository = "https://github.com/netrun-services/netrun-logging"
 Documentation = "https://netrun-logging.readthedocs.io"
 Changelog = "https://github.com/netrun-services/netrun-logging/blob/main/CHANGELOG.md"
 
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["netrun_logging*"]
+[tool.hatch.build.targets.wheel]
+packages = ["netrun", "netrun_logging"]
+
+[tool.hatch.build.targets.sdist]
+include = ["/netrun", "/netrun_logging", "/tests", "README.md", "LICENSE"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 python_files = "test_*.py"
 python_classes = "Test*"
 python_functions = "test_*"
-addopts = "--cov=netrun_logging --cov-report=html --cov-report=term"
+addopts = [
+    "-v",
+    "--cov=netrun.logging",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+]
 
 [tool.mypy]
 python_version = "3.9"

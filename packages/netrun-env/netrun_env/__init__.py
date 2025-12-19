@@ -1,27 +1,38 @@
 """
-Netrun Environment Validator - Unified .env validation CLI tool.
+DEPRECATED: Import from netrun.env instead.
 
-Provides schema-based validation, security checks, and environment comparison
-for environment variable files across development, staging, and production.
+This compatibility shim will be removed in version 3.0.0.
+Update your imports:
+    # Old (deprecated):
+    from netrun_env import ...
 
-Version 1.1.0 Changes:
-- Added optional netrun-logging integration for structured logging
-- Enhanced logging throughout validation, schema, and diff operations
-- Maintains backward compatibility with standard Python logging
+    # New:
+    from netrun.env import ...
+
+Migration Guide:
+    1. Replace all imports:
+       - from netrun_env import ... → from netrun.env import ...
+
+    2. Update requirements.txt or pyproject.toml:
+       - Add: netrun-core>=2.0.0
+       - Update: netrun-env>=2.0.0
+
+    3. Run tests to verify compatibility
+
+Author: Netrun Systems
+Version: 2.0.0 (Compatibility Shim)
+Date: 2025-12-18
 """
+import warnings
 
-__version__ = "1.1.0"
-__author__ = "Netrun Systems"
-__license__ = "MIT"
+warnings.warn(
+    "netrun_env is deprecated. Use 'from netrun.env import ...' instead. "
+    "This compatibility module will be removed in version 3.0.0. "
+    "See migration guide: https://docs.netrunsystems.com/env/migration",
+    DeprecationWarning,
+    stacklevel=2
+)
 
-from .validator import EnvValidator
-from .schema import SchemaGenerator
-from .diff import EnvDiff
-from .security import SecurityValidator
-
-__all__ = [
-    "EnvValidator",
-    "SchemaGenerator",
-    "EnvDiff",
-    "SecurityValidator",
-]
+# Re-export all public APIs from netrun.env
+from netrun.env import *
+from netrun.env import __all__

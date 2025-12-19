@@ -6,7 +6,7 @@ Comprehensive test suite for all validator functions in netrun-config.
 
 import pytest
 
-from netrun_config.validators import (
+from netrun.config.validators import (
     parse_cors_origins,
     validate_database_url,
     validate_environment,

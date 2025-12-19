@@ -1,9 +1,29 @@
 # Service #61: Netrun Unified Logging
 
-**Version**: 1.1.0
+**Version**: 2.0.0
 **Status**: Production Ready - PyPI Package Available
-**Last Updated**: December 3, 2025
+**Last Updated**: December 18, 2025
 **PyPI**: `netrun-logging`
+
+---
+
+## MIGRATION NOTICE: v2.0.0 Namespace Packaging
+
+**Version 2.0.0 introduces namespace packaging.** Import paths have changed:
+
+```python
+# ❌ OLD (deprecated, will be removed in v3.0.0):
+from netrun_logging import configure_logging, get_logger
+from netrun_logging.middleware import add_logging_middleware
+
+# ✅ NEW (required for v2.0.0+):
+from netrun.logging import configure_logging, get_logger
+from netrun.logging.middleware import add_logging_middleware
+```
+
+**Backwards compatibility shim included** - old imports will work with a deprecation warning until v3.0.0.
+
+See [MIGRATION_v2.0.0.md](./MIGRATION_v2.0.0.md) for complete migration guide.
 
 ---
 
@@ -45,7 +65,7 @@ pip install -e ".[dev]"
 ### Basic Usage
 
 ```python
-from netrun_logging import configure_logging, get_logger
+from netrun.logging import configure_logging, get_logger
 
 # Configure logging (call once at application startup)
 configure_logging(
@@ -77,14 +97,14 @@ logger.error("Operation failed", extra={"error_code": "E001"})
 
 ---
 
-## What's New in v1.1.0
+## What's New in v2.0.0
 
-### Structlog Backend
+### Namespace Packaging Migration
 
-v1.1.0 replaces the traditional `logging` module with structlog for improved performance and flexibility:
+v2.0.0 migrates to namespace packaging (`netrun.logging`) for better ecosystem integration:
 
 ```python
-from netrun_logging import configure_logging, get_logger
+from netrun.logging import configure_logging, get_logger
 
 configure_logging(app_name="my-service", environment="production")
 logger = get_logger(__name__)
@@ -107,7 +127,7 @@ All logging methods now have async counterparts:
 
 ```python
 import asyncio
-from netrun_logging import configure_logging, get_logger
+from netrun.logging import configure_logging, get_logger
 
 configure_logging(app_name="async-service")
 logger = get_logger(__name__)
@@ -159,7 +179,7 @@ When running with OpenTelemetry instrumentation, trace context is automatically 
 
 ```python
 from opentelemetry import trace
-from netrun_logging import configure_logging, get_logger
+from netrun.logging import configure_logging, get_logger
 
 configure_logging(app_name="traced-service")
 logger = get_logger(__name__)
@@ -179,7 +199,7 @@ with tracer.start_as_current_span("process_request"):
 New `bind_context()` function for adding persistent context to all logs:
 
 ```python
-from netrun_logging import configure_logging, get_logger, bind_context, clear_context
+from netrun.logging import configure_logging, get_logger, bind_context, clear_context
 
 configure_logging(app_name="context-service")
 logger = get_logger(__name__)
@@ -202,7 +222,7 @@ logger.info("logged_out")  # No context fields
 Track requests across distributed services:
 
 ```python
-from netrun_logging import configure_logging, get_logger, correlation_id_context
+from netrun.logging import configure_logging, get_logger, correlation_id_context
 
 configure_logging(app_name="api-gateway")
 logger = get_logger(__name__)
@@ -227,7 +247,7 @@ with correlation_id_context() as correlation_id:
 Add application metadata to all logs:
 
 ```python
-from netrun_logging import configure_logging, get_logger, set_context
+from netrun.logging import configure_logging, get_logger, set_context
 
 configure_logging(app_name="user-service")
 logger = get_logger(__name__)
@@ -250,8 +270,8 @@ logger.info("User action logged")
 
 ```python
 from fastapi import FastAPI
-from netrun_logging import configure_logging
-from netrun_logging.middleware.fastapi import LoggingMiddleware
+from netrun.logging import configure_logging
+from netrun.logging.middleware.fastapi import LoggingMiddleware
 
 app = FastAPI()
 
@@ -280,7 +300,7 @@ def health_check():
 ## Azure App Insights Integration
 
 ```python
-from netrun_logging import configure_logging
+from netrun.logging import configure_logging
 
 configure_logging(
     app_name="production-api",

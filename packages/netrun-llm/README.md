@@ -2,6 +2,22 @@
 
 Multi-provider LLM orchestration with automatic fallback chains and three-tier cognition system.
 
+> **IMPORTANT - Version 2.0.0 Migration Notice**
+>
+> Version 2.0.0 introduces a namespace change from `netrun_llm` to `netrun.llm` as part of the Netrun namespace consolidation.
+>
+> **Old imports (v1.x):**
+> ```python
+> from netrun_llm import LLMFallbackChain
+> ```
+>
+> **New imports (v2.x):**
+> ```python
+> from netrun.llm import LLMFallbackChain
+> ```
+>
+> The old `netrun_llm` namespace still works but is deprecated and will be removed in v3.0.0. Please update your code.
+
 ## Features
 
 - **Multi-Adapter Fallback Chains**: Automatic failover between LLM providers (Claude -> GPT-4 -> Llama3)
@@ -32,7 +48,7 @@ pip install netrun-llm[all]
 ### Basic Usage with Fallback Chain
 
 ```python
-from netrun_llm import LLMFallbackChain
+from netrun.llm import LLMFallbackChain
 
 # Create default chain: Claude -> OpenAI -> Ollama
 chain = LLMFallbackChain()
@@ -50,7 +66,7 @@ print(f"Fallbacks used: {response.metadata.get('fallback_attempts', 0)}")
 
 ```python
 import asyncio
-from netrun_llm import ThreeTierCognition, CognitionTier
+from netrun.llm import ThreeTierCognition, CognitionTier
 
 async def main():
     cognition = ThreeTierCognition()
@@ -69,7 +85,7 @@ asyncio.run(main())
 ### Individual Adapters
 
 ```python
-from netrun_llm import ClaudeAdapter, OpenAIAdapter, OllamaAdapter
+from netrun.llm import ClaudeAdapter, OpenAIAdapter, OllamaAdapter
 
 # Claude adapter
 claude = ClaudeAdapter()
@@ -111,7 +127,7 @@ LLM_DEFAULT_MAX_TOKENS=4096
 ### Using Placeholders (Security Best Practice)
 
 ```python
-from netrun_llm import ClaudeAdapter, LLMConfig
+from netrun.llm import ClaudeAdapter, LLMConfig
 
 # Placeholders are resolved from environment at runtime
 config = LLMConfig(
@@ -131,7 +147,7 @@ if issues:
 ### ClaudeAdapter (Anthropic)
 
 ```python
-from netrun_llm import ClaudeAdapter
+from netrun.llm import ClaudeAdapter
 
 adapter = ClaudeAdapter(
     default_model="claude-sonnet-4-5-20250929",
@@ -158,7 +174,7 @@ response = adapter.execute(
 ### OpenAIAdapter
 
 ```python
-from netrun_llm import OpenAIAdapter
+from netrun.llm import OpenAIAdapter
 
 adapter = OpenAIAdapter(
     default_model="gpt-4-turbo",
@@ -184,7 +200,7 @@ response = adapter.execute(
 ### OllamaAdapter (Local/Free)
 
 ```python
-from netrun_llm import OllamaAdapter
+from netrun.llm import OllamaAdapter
 
 adapter = OllamaAdapter(
     model="llama3",
@@ -216,7 +232,7 @@ print(f"Available: {models}")
 ### Default Chain
 
 ```python
-from netrun_llm import LLMFallbackChain
+from netrun.llm import LLMFallbackChain
 
 # Default: Claude -> OpenAI -> Ollama
 chain = LLMFallbackChain()
@@ -225,7 +241,7 @@ chain = LLMFallbackChain()
 ### Custom Chain
 
 ```python
-from netrun_llm import LLMFallbackChain, ClaudeAdapter, OpenAIAdapter, OllamaAdapter
+from netrun.llm import LLMFallbackChain, ClaudeAdapter, OpenAIAdapter, OllamaAdapter
 
 # Cost-optimized: Free first, premium last
 chain = LLMFallbackChain(adapters=[
@@ -262,7 +278,7 @@ The cognition system provides progressive response generation with latency targe
 
 ```python
 import asyncio
-from netrun_llm import ThreeTierCognition, CognitionTier
+from netrun.llm import ThreeTierCognition, CognitionTier
 
 async def chat():
     cognition = ThreeTierCognition()
@@ -291,7 +307,7 @@ asyncio.run(quick_answer())
 ### With RAG Integration
 
 ```python
-from netrun_llm import ThreeTierCognition
+from netrun.llm import ThreeTierCognition
 
 async def retrieve_documents(query: str) -> list[str]:
     """Your document retrieval function."""
@@ -307,7 +323,7 @@ cognition = ThreeTierCognition(
 ## Error Handling
 
 ```python
-from netrun_llm import (
+from netrun.llm import (
     LLMFallbackChain,
     AllAdaptersFailedError,
     RateLimitError,
@@ -329,17 +345,207 @@ except CircuitBreakerOpenError as e:
     print(f"Cooldown: {e.cooldown_remaining_seconds}s")
 ```
 
+## Policy Enforcement (NEW in v2.0.0)
+
+Control LLM usage, costs, and rate limits with fine-grained policies.
+
+### Quick Start with Policies
+
+```python
+from netrun.llm import TenantPolicy, ProviderPolicy, PolicyEnforcer, CostTier
+
+# Define policy for a tenant
+policy = TenantPolicy(
+    tenant_id="acme-corp",
+    monthly_budget_usd=100.0,
+    daily_budget_usd=10.0,
+    provider_policies={
+        "openai": ProviderPolicy(
+            provider="openai",
+            allowed_models=["gpt-4o-mini", "gpt-4o"],
+            max_tokens_per_request=4096,
+            max_cost_per_request=0.10,
+            cost_tier_limit=CostTier.MEDIUM,
+        ),
+    },
+    fallback_to_local=True,  # Fall back to Ollama if budget exceeded
+)
+
+# Create enforcer
+enforcer = PolicyEnforcer(policy)
+
+# Validate before making request
+try:
+    enforcer.validate_request(
+        provider="openai",
+        model="gpt-4o-mini",
+        estimated_tokens=2000,
+        reason="Customer support chatbot",
+    )
+    # Request validated - proceed with LLM call
+    # ...
+
+    # Record usage after completion
+    enforcer.record_usage(
+        provider="openai",
+        model="gpt-4o-mini",
+        tokens_input=1500,
+        tokens_output=500,
+        cost_usd=0.0045,
+        latency_ms=1200,
+        success=True,
+    )
+except PolicyViolationError as e:
+    print(f"Policy violation: {e}")
+except FallbackToLocalError as e:
+    print(f"Budget exceeded, using local model: {e}")
+```
+
+### Cost Tiers
+
+Models are classified into cost tiers for easy policy management:
+
+| Tier | Models | Use Case |
+|------|--------|----------|
+| FREE | Ollama (llama3, mistral, etc.) | Development, testing |
+| LOW | gpt-4o-mini, claude-haiku | High-volume production |
+| MEDIUM | gpt-4o, claude-sonnet | Standard production |
+| HIGH | gpt-4, claude-opus | Complex analysis |
+| PREMIUM | o1-preview, o1-mini | Advanced reasoning |
+
+### Budget Enforcement
+
+```python
+# Monthly budget with daily limits
+policy = TenantPolicy(
+    tenant_id="startup-corp",
+    monthly_budget_usd=200.0,
+    daily_budget_usd=10.0,
+    fallback_to_local=True,
+)
+
+enforcer = PolicyEnforcer(policy)
+
+# Budget tracking
+report = enforcer.get_usage_report(days=30)
+print(f"Budget used: {report['budget_used_pct']:.1f}%")
+print(f"Remaining: ${report['budget_remaining_usd']:.2f}")
+```
+
+### Rate Limiting
+
+```python
+# Control requests per minute (RPM) and tokens per minute (TPM)
+policy = TenantPolicy(
+    tenant_id="api-service",
+    provider_policies={
+        "openai": ProviderPolicy(
+            provider="openai",
+            rate_limit_rpm=60,      # 60 requests per minute
+            rate_limit_tpm=100000,  # 100K tokens per minute
+        ),
+    },
+)
+```
+
+### Multi-Tenant Isolation
+
+```python
+# Enterprise customer: High budget, premium models
+enterprise_policy = TenantPolicy(
+    tenant_id="enterprise-customer",
+    monthly_budget_usd=10000.0,
+    provider_policies={
+        "anthropic": ProviderPolicy(
+            provider="anthropic",
+            allowed_models=["claude-3-opus", "claude-3-5-sonnet"],
+        ),
+    },
+)
+
+# Startup customer: Limited budget, cost-conscious
+startup_policy = TenantPolicy(
+    tenant_id="startup-customer",
+    monthly_budget_usd=50.0,
+    provider_policies={
+        "openai": ProviderPolicy(
+            provider="openai",
+            cost_tier_limit=CostTier.LOW,  # Only low-cost models
+        ),
+    },
+    fallback_to_local=True,
+)
+
+# Separate enforcers ensure isolation
+enterprise_enforcer = PolicyEnforcer(enterprise_policy)
+startup_enforcer = PolicyEnforcer(startup_policy)
+```
+
+### Usage Tracking and Reporting
+
+```python
+# Get detailed usage report
+report = enforcer.get_usage_report(days=30)
+
+print(f"Total requests: {report['total_requests']}")
+print(f"Total cost: ${report['total_cost_usd']:.4f}")
+print(f"Total tokens: {report['total_tokens']}")
+
+# By provider
+for provider, stats in report['by_provider'].items():
+    print(f"{provider}: {stats['requests']} requests, ${stats['cost_usd']:.4f}")
+
+# By model
+for model, stats in report['by_model'].items():
+    print(f"{model}: {stats['requests']} requests, ${stats['cost_usd']:.4f}")
+```
+
+### Policy Exceptions
+
+```python
+from netrun.llm import (
+    PolicyViolationError,
+    BudgetExceededError,
+    RateLimitExceededError,
+    FallbackToLocalError,
+)
+
+try:
+    enforcer.validate_request(
+        provider="openai",
+        model="gpt-4o",
+        estimated_tokens=5000,
+    )
+except PolicyViolationError as e:
+    # Model denied, token limit exceeded, etc.
+    print(f"Policy violation: {e}")
+except BudgetExceededError as e:
+    # Budget limit exceeded, no fallback available
+    print(f"Budget exceeded: {e}")
+except RateLimitExceededError as e:
+    # Rate limit exceeded
+    print(f"Rate limited: {e}")
+except FallbackToLocalError as e:
+    # Budget exceeded but local fallback available
+    print(f"Falling back to local model: {e}")
+    # Retry with Ollama
+```
+
+See `examples/policy_enforcement_example.py` for comprehensive examples.
+
 ## Pricing Reference (2025)
 
-| Provider | Model | Input (per 1M tokens) | Output (per 1M tokens) |
-|----------|-------|----------------------|------------------------|
-| Claude | Sonnet 4.5/3.5 | $3.00 | $15.00 |
-| Claude | Opus 3 | $15.00 | $75.00 |
-| Claude | Haiku 3 | $0.25 | $1.25 |
-| OpenAI | GPT-4 Turbo | $10.00 | $30.00 |
-| OpenAI | GPT-4o | $5.00 | $15.00 |
-| OpenAI | GPT-3.5 Turbo | $0.50 | $1.50 |
-| Ollama | All models | $0.00 | $0.00 |
+| Provider | Model | Input (per 1M tokens) | Output (per 1M tokens) | Cost Tier |
+|----------|-------|----------------------|------------------------|-----------|
+| Claude | Sonnet 4.5/3.5 | $3.00 | $15.00 | MEDIUM |
+| Claude | Opus 3/4.5 | $15.00 | $75.00 | HIGH |
+| Claude | Haiku 3/3.5 | $0.25-$0.80 | $1.25-$4.00 | LOW |
+| OpenAI | GPT-4 Turbo | $10.00 | $30.00 | HIGH |
+| OpenAI | GPT-4o | $2.50 | $10.00 | MEDIUM |
+| OpenAI | GPT-4o-mini | $0.15 | $0.60 | LOW |
+| OpenAI | GPT-3.5 Turbo | $0.50 | $1.50 | LOW |
+| OpenAI | O1 Preview | $15.00 | $60.00 | PREMIUM |
+| Ollama | All models | $0.00 | $0.00 | FREE |
 
 ## License
 

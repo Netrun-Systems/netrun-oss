@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling>=1.21.0"]
+build-backend = "hatchling.build"
 
 [project]
 name = "netrun-config"
-version = "1.2.0"
+version = "2.0.0"
 description = "Unified configuration management for Netrun Systems portfolio with TTL caching and multi-vault support"
 authors = [
     {name = "Daniel Garza", email = "daniel@netrunsystems.com"}
@@ -12,7 +12,7 @@ authors = [
 license = {text = "MIT"}
 readme = "README.md"
 requires-python = ">=3.10"
-keywords = ["configuration", "settings", "pydantic", "azure", "keyvault", "caching", "multi-vault"]
+keywords = ["configuration", "settings", "pydantic", "azure", "keyvault", "caching", "multi-vault", "namespace"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
@@ -22,7 +22,8 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Topic :: Software Development :: Libraries :: Python Modules",
-    "Topic :: System :: Systems Administration",
+    "Framework :: Pydantic",
+    "Framework :: Pydantic :: 2",
 ]
 
 dependencies = [
@@ -36,16 +37,13 @@ azure = [
     "azure-keyvault-secrets>=4.8.0",
 ]
 errors = [
-    "netrun-errors>=1.0.0",
+    "netrun-errors>=2.0.0",
 ]
 logging = [
-    "netrun-logging>=1.1.0",
+    "netrun-logging>=2.0.0",
 ]
 all = [
-    "azure-identity>=1.15.0",
-    "azure-keyvault-secrets>=4.8.0",
-    "netrun-errors>=1.0.0",
-    "netrun-logging>=1.1.0",
+    "netrun-config[azure,errors,logging]",
 ]
 dev = [
     "pytest>=7.4.0",
@@ -58,13 +56,15 @@ dev = [
 
 [project.urls]
 Homepage = "https://github.com/netrunsystems/netrun-config"
-Documentation = "https://github.com/netrunsystems/netrun-config#readme"
+Documentation = "https://docs.netrunsystems.com/config"
 Repository = "https://github.com/netrunsystems/netrun-config"
 Issues = "https://github.com/netrunsystems/netrun-config/issues"
 
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["netrun_config*"]
+[tool.hatch.build.targets.wheel]
+packages = ["netrun", "netrun_config"]
+
+[tool.hatch.build.targets.sdist]
+include = ["/netrun", "/netrun_config", "/tests", "README.md", "LICENSE"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -73,7 +73,7 @@ python_classes = ["Test*"]
 python_functions = ["test_*"]
 addopts = [
     "-v",
-    "--cov=netrun_config",
+    "--cov=netrun.config",
     "--cov-report=term-missing",
     "--cov-report=html",
 ]

@@ -1,13 +1,55 @@
-# netrun-auth v1.1.0
+# netrun-auth v2.0.0
 
 Unified authentication library for Netrun Systems portfolio (Service #59).
 
-## Latest Changes (v1.1.0)
+## BREAKING CHANGE: v2.0.0 - Namespace Migration
 
-- Fixed missing `Any` type import in `rbac.py` for proper type checking
-- Improved type safety in RBAC manager factory function
-- All tests passing (111 passed, 172 skipped)
-- Distribution artifacts validated with twine
+**netrun-auth has migrated from `netrun_auth` to `netrun.auth` namespace.**
+
+### Migration Required
+
+If you are upgrading from v1.x, you MUST update your imports:
+
+```python
+# Old (v1.x - DEPRECATED):
+from netrun_auth import JWTManager, AuthConfig
+from netrun_auth.middleware import AuthenticationMiddleware
+from netrun_auth.dependencies import get_current_user
+
+# New (v2.0+):
+from netrun.auth import JWTManager, AuthConfig
+from netrun.auth.middleware import AuthenticationMiddleware
+from netrun.auth.dependencies import get_current_user
+```
+
+### Backwards Compatibility
+
+A compatibility shim is provided for v2.x that allows old imports to continue working with a deprecation warning. This shim will be REMOVED in v3.0.0.
+
+### Migration Steps
+
+1. **Update imports** in your codebase:
+   - Replace `netrun_auth` with `netrun.auth`
+   - Use find/replace across your project
+
+2. **Update dependencies**:
+   ```toml
+   # pyproject.toml or requirements.txt
+   netrun-core>=1.0.0  # NEW: Required dependency
+   netrun-auth>=2.0.0
+   ```
+
+3. **Run tests** to verify compatibility
+
+4. **Remove deprecation warnings** by updating all imports before v3.0.0
+
+### Latest Changes (v2.0.0)
+
+- **BREAKING**: Migrated to `netrun.auth` namespace
+- Added `netrun-core>=1.0.0` dependency
+- Updated to use `netrun.logging` namespace (if netrun-logging installed)
+- Backwards compatibility shim provided (deprecated, removed in v3.0.0)
+- All tests passing with new namespace structure
 
 ## Features
 
@@ -66,7 +108,7 @@ NETRUN_AUTH_JWT_PUBLIC_KEY_PATH=/path/to/public_key.pem
 ### 2. Initialize JWT Manager
 
 ```python
-from netrun_auth import JWTManager, AuthConfig
+from netrun.auth import JWTManager, AuthConfig
 import redis.asyncio as redis
 
 # Load configuration
@@ -83,7 +125,7 @@ jwt_manager = JWTManager(config, redis_client)
 
 ```python
 from fastapi import FastAPI
-from netrun_auth.middleware import AuthenticationMiddleware
+from netrun.auth.middleware import AuthenticationMiddleware
 
 app = FastAPI()
 
@@ -100,12 +142,12 @@ app.add_middleware(
 
 ```python
 from fastapi import Depends
-from netrun_auth.dependencies import (
+from netrun.auth.dependencies import (
     get_current_user,
     require_permissions,
     require_roles
 )
-from netrun_auth import User
+from netrun.auth import User
 
 @app.get("/me")
 async def get_me(user: User = Depends(get_current_user)):
@@ -148,7 +190,7 @@ print(f"Expires In: {token_pair.expires_in} seconds")
 ### 6. Password Hashing
 
 ```python
-from netrun_auth import PasswordManager
+from netrun.auth import PasswordManager
 
 password_manager = PasswordManager()
 
@@ -184,7 +226,7 @@ Permissions follow the `resource:action` format:
 ### Custom Roles
 
 ```python
-from netrun_auth import get_rbac_manager, Role
+from netrun.auth import get_rbac_manager, Role
 
 rbac = get_rbac_manager()
 
@@ -207,7 +249,7 @@ rbac.add_role(custom_role)
 ### Check Permissions
 
 ```python
-from netrun_auth import User
+from netrun.auth import User
 
 user = User(
     user_id="user_123",
@@ -260,19 +302,25 @@ All configuration via environment variables with `NETRUN_AUTH_` prefix:
 ## Architecture
 
 ```
-netrun_auth/
-├── __init__.py          # Public API exports
-├── jwt.py              # JWT token management (RS256, key rotation)
-├── password.py         # Password hashing (Argon2id)
-├── rbac.py             # Role-Based Access Control
-├── middleware.py       # FastAPI authentication middleware
-├── dependencies.py     # FastAPI dependency injection
-├── types.py            # Pydantic models (TokenClaims, User, AuthContext)
-├── exceptions.py       # Custom exception hierarchy
-├── config.py           # Configuration via Pydantic Settings
-└── integrations/
-    ├── azure_ad.py     # Azure AD/Entra ID (optional)
-    └── oauth.py        # Generic OAuth 2.0 (optional)
+netrun/
+└── auth/               # NEW: Namespace structure (v2.0+)
+    ├── __init__.py     # Public API exports
+    ├── py.typed        # PEP 561 type marker
+    ├── jwt.py          # JWT token management (RS256, key rotation)
+    ├── password.py     # Password hashing (Argon2id)
+    ├── rbac.py         # Role-Based Access Control
+    ├── middleware.py   # FastAPI authentication middleware
+    ├── dependencies.py # FastAPI dependency injection
+    ├── types.py        # Pydantic models (TokenClaims, User, AuthContext)
+    ├── exceptions.py   # Custom exception hierarchy
+    ├── config.py       # Configuration via Pydantic Settings
+    └── integrations/
+        ├── azure_ad.py     # Azure AD/Entra ID (optional)
+        ├── azure_ad_b2c.py # Azure AD B2C (optional)
+        └── oauth.py        # Generic OAuth 2.0 (optional)
+
+netrun_auth/            # DEPRECATED: Backwards compatibility shim (removed in v3.0.0)
+    └── __init__.py
 ```
 
 ## Development
@@ -297,13 +345,13 @@ pytest
 
 ```bash
 # Format code
-black netrun_auth/
+black netrun/
 
 # Lint
-ruff netrun_auth/
+ruff netrun/
 
 # Type check
-mypy netrun_auth/
+mypy netrun/
 ```
 
 ## License

@@ -7,7 +7,7 @@ from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from netrun_config.cache import CachedSecret, SecretCache, SecretCacheConfig
+from netrun.config.cache import CachedSecret, SecretCache, SecretCacheConfig
 
 
 class TestCachedSecret:

@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "netrun-llm"
-version = "1.1.0"
+version = "2.0.0"
 description = "Multi-provider LLM orchestration with fallback chains and three-tier cognition"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -42,6 +42,7 @@ classifiers = [
 
 dependencies = [
     "requests>=2.28.0",
+    "netrun-core>=1.0.0",
 ]
 
 [project.optional-dependencies]
@@ -52,12 +53,12 @@ openai = [
     "openai>=1.0.0",
 ]
 logging = [
-    "netrun-logging>=1.2.0",
+    "netrun-logging>=2.0.0",
 ]
 all = [
     "anthropic>=0.25.0",
     "openai>=1.0.0",
-    "netrun-logging>=1.2.0",
+    "netrun-logging>=2.0.0",
 ]
 dev = [
     "pytest>=7.0.0",
@@ -66,7 +67,7 @@ dev = [
     "black>=23.0.0",
     "ruff>=0.1.0",
     "mypy>=1.0.0",
-    "netrun-logging>=1.2.0",
+    "netrun-logging>=2.0.0",
 ]
 
 [project.urls]
@@ -75,10 +76,16 @@ Documentation = "https://github.com/netrunsystems/netrun-service-library"
 Repository = "https://github.com/netrunsystems/netrun-service-library"
 Issues = "https://github.com/netrunsystems/netrun-service-library/issues"
 
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["netrun_llm*"]
-exclude = ["tests*"]
+[tool.hatch.build.targets.wheel]
+packages = ["netrun", "netrun_llm"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/netrun",
+    "/netrun_llm",
+    "/README.md",
+    "/LICENSE",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -88,14 +95,14 @@ python_functions = ["test_*"]
 asyncio_mode = "auto"
 addopts = [
     "--verbose",
-    "--cov=netrun_llm",
+    "--cov=netrun.llm",
     "--cov-report=term-missing",
     "--cov-report=html",
     "--cov-report=xml",
 ]
 
 [tool.coverage.run]
-source = ["netrun_llm"]
+source = ["netrun.llm"]
 omit = ["tests/*", "**/__pycache__/*"]
 
 [tool.coverage.report]

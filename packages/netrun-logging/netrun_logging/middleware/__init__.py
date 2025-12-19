@@ -1,9 +1,15 @@
-"""Middleware integrations for web frameworks."""
+"""
+DEPRECATED: Import from netrun.logging.middleware instead.
+This compatibility shim will be removed in version 3.0.0.
+"""
+import warnings
 
-from netrun_logging.middleware.fastapi import (
-    CorrelationIdMiddleware,
-    LoggingMiddleware,
-    add_logging_middleware,
+warnings.warn(
+    "netrun_logging.middleware is deprecated. Use 'from netrun.logging.middleware import ...' instead. "
+    "This module will be removed in version 3.0.0.",
+    DeprecationWarning,
+    stacklevel=2
 )
 
-__all__ = ["CorrelationIdMiddleware", "LoggingMiddleware", "add_logging_middleware"]
+from netrun.logging.middleware import *  # noqa: F401, F403
+from netrun.logging.middleware import __all__  # noqa: F401

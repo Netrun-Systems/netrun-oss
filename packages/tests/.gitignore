@@ -1,0 +1,69 @@
+# Test artifacts and generated files
+
+# Coverage reports
+.coverage
+coverage.xml
+htmlcov/
+.coverage.*
+
+# Pytest cache
+.pytest_cache/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Test logs
+pytest.log
+*.log
+
+# Virtual environments
+venv/
+env/
+.venv/
+.env/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Build artifacts
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Temporary files
+*.tmp
+*.temp
+.tmp/
+.temp/
+
+# Tox
+.tox/
+
+# mypy
+.mypy_cache/
+
+# ruff
+.ruff_cache/
+
+# Python cache
+*.py[cod]
+*$py.class
+
+# Jupyter notebooks
+.ipynb_checkpoints/
+
+# pytest-benchmark
+.benchmarks/
+
+# pytest-monitor
+.pymon/

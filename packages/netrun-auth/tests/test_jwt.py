@@ -19,10 +19,10 @@ from unittest.mock import AsyncMock, patch, MagicMock
 import jwt as pyjwt
 import asyncio
 
-from netrun_auth.jwt import JWTManager, KeyPair
-from netrun_auth.config import AuthConfig
-from netrun_auth.types import TokenType, TokenClaims
-from netrun_auth.exceptions import (
+from netrun.auth.jwt import JWTManager, KeyPair
+from netrun.auth.config import AuthConfig
+from netrun.auth.types import TokenType, TokenClaims
+from netrun.auth.exceptions import (
     TokenExpiredError,
     TokenInvalidError,
     TokenBlacklistedError

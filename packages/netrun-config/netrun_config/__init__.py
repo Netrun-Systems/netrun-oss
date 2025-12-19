@@ -1,58 +1,58 @@
 """
-Netrun Systems Unified Configuration Library
-=============================================
+Backwards compatibility shim for netrun-config v2.0.0+
 
-A standardized configuration management library for all Netrun Systems projects.
+DEPRECATED: This import path (netrun_config) is deprecated as of v2.0.0.
+Please update your imports to use the namespace package:
 
-Features:
-- Pydantic v2 BaseSettings with validation
-- Azure Key Vault integration with TTL caching
-- Multi-vault support for different secret sources
-- Secret rotation detection
-- Environment-specific configuration
-- Caching and performance optimization
-- Security best practices (32-char secrets, CORS parsing, etc.)
-- Optional netrun-errors integration for standardized error handling
-- Optional netrun-logging integration for structured logging
+    OLD: from netrun_config import BaseConfig, get_settings
+    NEW: from netrun.config import BaseConfig, get_settings
 
-Example:
-    >>> from netrun_config import BaseConfig, Field, get_settings
-    >>>
-    >>> class MyAppSettings(BaseConfig):
-    ...     app_name: str = Field(default="MyApp")
-    ...     custom_setting: str = Field(..., env="CUSTOM_SETTING")
-    >>>
-    >>> settings = get_settings(MyAppSettings)
-    >>> print(settings.app_name)
-    MyApp
-    >>> print(settings.is_production)
-    False
+This compatibility shim will be removed in v3.0.0 (planned Q2 2026).
 
-Author: Netrun Systems
-Version: 1.2.0
-License: MIT
+For migration instructions, see:
+https://github.com/netrunsystems/netrun-config/blob/main/MIGRATION.md
 """
 
-__version__ = "1.2.0"
+import warnings
 
-from .base import BaseConfig, get_settings, reload_settings
-from .cache import CachedSecret, SecretCache, SecretCacheConfig
-from .exceptions import (
+# Issue deprecation warning
+warnings.warn(
+    "Importing from 'netrun_config' is deprecated. "
+    "Please update to 'from netrun.config import ...' instead. "
+    "This compatibility layer will be removed in v3.0.0.",
+    DeprecationWarning,
+    stacklevel=2,
+)
+
+# Re-export all public symbols from netrun.config
+from netrun.config import (
+    # Core Configuration
+    BaseConfig,
+    Field,
+    get_settings,
+    reload_settings,
+    # Legacy Key Vault (v1.0.0 compatibility)
+    KeyVaultMixin,
+    # TTL Caching (v1.1.0)
+    SecretCache,
+    SecretCacheConfig,
+    CachedSecret,
+    # Multi-Vault Support (v1.1.0)
+    MultiVaultClient,
+    VaultConfig,
+    # Pydantic Settings Source Integration (v1.1.0)
+    AzureKeyVaultSettingsSource,
+    AzureKeyVaultRefreshableSettingsSource,
+    # Exceptions
     ConfigError,
     KeyVaultError,
     ValidationError,
-    raise_keyvault_unavailable,
+    # Error Factories (v1.2.0)
     raise_validation_error,
+    raise_keyvault_unavailable,
+    # Metadata
+    __version__,
 )
-from .keyvault import KeyVaultMixin
-from .multi_vault import MultiVaultClient, VaultConfig
-from .settings_source import (
-    AzureKeyVaultRefreshableSettingsSource,
-    AzureKeyVaultSettingsSource,
-)
-
-# Re-export Pydantic Field for convenience
-from pydantic import Field
 
 __all__ = [
     # Core Configuration

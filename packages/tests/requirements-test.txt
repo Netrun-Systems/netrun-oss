@@ -1,0 +1,233 @@
+# Testing Requirements for Namespace Package Import Tests
+# ==========================================================
+#
+# Install with: pip install -r requirements-test.txt
+#
+# This file contains all dependencies needed to run the comprehensive
+# namespace package import test suite.
+
+# Core Testing Framework
+# ----------------------
+pytest>=7.4.0,<9.0.0
+    # Core testing framework with fixtures and parameterization
+    # Minimum 7.4.0 for strict-markers and modern features
+
+pytest-asyncio>=0.21.0,<1.0.0
+    # Async test support for testing async imports and operations
+    # Required for packages with async functionality
+
+pytest-cov>=4.1.0,<6.0.0
+    # Code coverage reporting and analysis
+    # Generates HTML, XML, and terminal coverage reports
+
+pytest-xdist>=3.3.0,<4.0.0
+    # Parallel test execution for faster test runs
+    # Usage: pytest -n auto
+
+pytest-timeout>=2.1.0,<3.0.0
+    # Timeout support for tests that might hang
+    # Prevents infinite loops in import tests
+
+pytest-mock>=3.12.0,<4.0.0
+    # Enhanced mocking support
+    # Useful for testing import side effects
+
+
+# Test Utilities
+# --------------
+pytest-benchmark>=4.0.0,<5.0.0
+    # Performance benchmarking for import times
+    # Useful for measuring namespace discovery overhead
+
+pytest-randomly>=3.13.0,<4.0.0
+    # Randomize test order to detect hidden dependencies
+    # Ensures tests are truly independent
+
+pytest-sugar>=0.9.7,<1.0.0
+    # Enhanced test output with progress bar
+    # Better visual feedback during test runs
+
+
+# Type Checking and Validation
+# ----------------------------
+mypy>=1.7.0,<2.0.0
+    # Static type checker for type hint validation
+    # Used in PEP 561 compliance tests
+
+types-setuptools>=69.0.0
+    # Type stubs for setuptools
+    # Required for package metadata tests
+
+
+# Import and Module Testing
+# -------------------------
+importlib-metadata>=6.8.0,<8.0.0
+    # Backport of importlib.metadata for Python 3.9+
+    # Package metadata inspection
+
+packaging>=23.0,<25.0
+    # Version parsing and comparison
+    # Used for semantic version validation
+
+
+# Package Management
+# ------------------
+pip>=23.0,<25.0
+    # Latest pip for package installation tests
+    # Required for isolated environment tests
+
+setuptools>=68.0,<71.0
+    # Package building and installation
+    # Required for editable installs
+
+wheel>=0.41.0,<1.0.0
+    # Wheel package format support
+    # Required for building distributions
+
+
+# Configuration File Parsing
+# --------------------------
+tomli>=2.0.0,<3.0.0; python_version < "3.11"
+    # TOML parser for Python <3.11
+    # Python 3.11+ has built-in tomllib
+
+tomli-w>=1.0.0,<2.0.0
+    # TOML writer (for test fixture generation)
+
+
+# Additional Testing Tools
+# ------------------------
+pytest-env>=1.0.0,<2.0.0
+    # Environment variable configuration for tests
+    # Useful for testing environment-based imports
+
+pytest-ordering>=0.6,<1.0
+    # Control test execution order when needed
+    # Useful for setup/teardown dependencies
+
+pytest-repeat>=0.9.1,<1.0.0
+    # Repeat tests to catch intermittent failures
+    # Usage: pytest --count=100
+
+pytest-instafail>=0.5.0,<1.0.0
+    # Show failures instantly instead of at end
+    # Better feedback during long test runs
+
+
+# Documentation and Reporting
+# ---------------------------
+pytest-html>=3.2.0,<5.0.0
+    # HTML test reports
+    # Generates detailed test result HTML pages
+
+pytest-json-report>=1.5.0,<2.0.0
+    # JSON test reports for CI/CD integration
+    # Machine-readable test results
+
+
+# Code Quality
+# ------------
+ruff>=0.1.8,<1.0.0
+    # Fast Python linter
+    # Check code quality in test files
+
+black>=23.12.0,<25.0.0
+    # Code formatter
+    # Ensure consistent test code style
+
+
+# Development Dependencies
+# ------------------------
+ipython>=8.12.0,<9.0.0
+    # Enhanced Python shell for debugging
+    # Useful for interactive testing
+
+pdbpp>=0.10.3,<1.0.0
+    # Enhanced debugger
+    # Better debugging experience
+
+
+# Optional: Namespace Package Creation
+# ------------------------------------
+pkgutil-resolve-name>=1.3.10,<2.0.0
+    # Backport of pkgutil.resolve_name
+    # Used in namespace package discovery tests
+
+
+# Optional: Advanced Import Testing
+# ---------------------------------
+importlab>=0.8,<1.0
+    # Import dependency analysis
+    # Detect circular imports and dependency issues
+
+
+# Platform-Specific Dependencies
+# ------------------------------
+# These are installed only on specific platforms
+
+# Windows-specific
+pywin32>=305; sys_platform == "win32"
+    # Windows API access
+    # Required for Windows-specific path testing
+
+
+# Version Compatibility Testing
+# -----------------------------
+# These help test across Python versions
+
+tox>=4.0.0,<5.0.0
+    # Test across multiple Python versions
+    # Usage: tox -e py310,py311,py312
+
+nox>=2023.4.22,<2025.0.0
+    # Alternative to tox with Python-based config
+    # More flexible for complex test scenarios
+
+
+# CI/CD Integration
+# -----------------
+coverage[toml]>=7.3.0,<8.0.0
+    # Coverage.py with TOML support
+    # Generate coverage reports for CI/CD
+
+codecov>=2.1.13,<3.0.0
+    # Codecov integration
+    # Upload coverage to codecov.io
+
+
+# Performance Testing
+# -------------------
+pytest-memray>=1.5.0,<2.0.0; python_version >= "3.11"
+    # Memory profiling for tests
+    # Detect memory leaks in import code
+
+pytest-monitor>=1.6.0,<2.0.0
+    # Resource monitoring during tests
+    # Track CPU, memory, and time usage
+
+
+# Security Testing
+# ----------------
+safety>=2.3.0,<4.0.0
+    # Check dependencies for known vulnerabilities
+    # Usage: safety check -r requirements-test.txt
+
+bandit>=1.7.0,<2.0.0
+    # Security linter for test code
+    # Detect security issues in tests
+
+
+# Optional: Documentation Testing
+# -------------------------------
+pytest-doctestplus>=1.0.0,<2.0.0
+    # Enhanced doctest support
+    # Test code examples in docstrings
+
+
+# Notes:
+# ------
+# 1. Install all: pip install -r requirements-test.txt
+# 2. Install minimal: pip install pytest pytest-cov pytest-asyncio
+# 3. For CI/CD: Also install tox or nox for multi-version testing
+# 4. Python 3.11+ includes tomllib (no need for tomli)
+# 5. Some packages (pytest-memray) require Python 3.11+

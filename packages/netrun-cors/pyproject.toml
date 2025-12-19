@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "netrun-cors"
-version = "1.1.0"
+version = "2.1.0"
 description = "Enterprise CORS middleware presets for FastAPI applications"
 readme = "README.md"
 license = { text = "MIT" }
@@ -34,6 +34,7 @@ classifiers = [
 ]
 requires-python = ">=3.11"
 dependencies = [
+    "netrun-core>=2.0.0",
     "fastapi>=0.109.0",
     "pydantic>=2.0.0",
     "pydantic-settings>=2.0.0",
@@ -42,7 +43,7 @@ dependencies = [
 
 [project.optional-dependencies]
 logging = [
-    "netrun-logging>=1.2.0",
+    "netrun-logging>=2.0.0",
 ]
 dev = [
     "pytest>=7.4.0",
@@ -52,7 +53,7 @@ dev = [
     "black>=23.0.0",
     "ruff>=0.1.0",
     "mypy>=1.7.0",
-    "netrun-logging>=1.2.0",
+    "netrun-logging>=2.0.0",
 ]
 
 [project.urls]
@@ -71,13 +72,13 @@ python_classes = ["Test*"]
 python_functions = ["test_*"]
 addopts = [
     "--verbose",
-    "--cov=netrun_cors",
+    "--cov=netrun.cors",
     "--cov-report=term-missing",
     "--cov-report=html",
 ]
 
 [tool.coverage.run]
-source = ["netrun_cors"]
+source = ["netrun.cors"]
 omit = ["tests/*"]
 
 [tool.coverage.report]

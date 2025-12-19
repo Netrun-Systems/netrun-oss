@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools>=61.0", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "netrun-ratelimit"
-version = "1.0.0"
+version = "2.0.0"
 description = "Distributed rate limiting with token bucket algorithm and Redis backend"
 readme = "README.md"
 license = {text = "MIT"}
@@ -25,7 +25,7 @@ keywords = [
     "distributed"
 ]
 classifiers = [
-    "Development Status :: 4 - Beta",
+    "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
@@ -40,6 +40,7 @@ classifiers = [
 ]
 requires-python = ">=3.10"
 dependencies = [
+    "netrun-core>=2.0.0",
     "pydantic>=2.0.0,<3.0.0",
     "pydantic-settings>=2.0.0,<3.0.0",
 ]
@@ -62,7 +63,6 @@ dev = [
     "pytest-asyncio>=0.21.0",
     "pytest-cov>=4.0.0",
     "fakeredis>=2.20.0",
-    "lupa>=2.0",
     "httpx>=0.25.0",
     "black>=23.0.0",
     "ruff>=0.1.0",
@@ -70,23 +70,35 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://github.com/Netrun-Systems/netrun-oss"
-Documentation = "https://github.com/Netrun-Systems/netrun-oss/tree/main/packages/netrun-ratelimit"
-Repository = "https://github.com/Netrun-Systems/netrun-oss"
-Issues = "https://github.com/Netrun-Systems/netrun-oss/issues"
-Changelog = "https://github.com/Netrun-Systems/netrun-oss/blob/main/packages/netrun-ratelimit/CHANGELOG.md"
+Homepage = "https://netrunsystems.com"
+Documentation = "https://docs.netrunsystems.com/ratelimit"
+Repository = "https://github.com/netrunsystems/netrun-ratelimit"
+Issues = "https://github.com/netrunsystems/netrun-ratelimit/issues"
+Changelog = "https://github.com/netrunsystems/netrun-ratelimit/blob/main/CHANGELOG.md"
 
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["netrun_ratelimit*"]
+[tool.hatch.build.targets.wheel]
+packages = ["netrun", "netrun_ratelimit"]
 
-[tool.setuptools.package-data]
-netrun_ratelimit = ["py.typed"]
+[tool.hatch.build.targets.sdist]
+include = [
+    "/netrun",
+    "/netrun_ratelimit",
+    "/tests",
+    "README.md",
+    "pyproject.toml",
+]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 asyncio_mode = "auto"
-addopts = "-v --tb=short"
+addopts = [
+    "-v",
+    "--tb=short",
+    "--cov=netrun.ratelimit",
+    "--cov-report=term-missing",
+    "--cov-report=html:htmlcov",
+    "--cov-report=xml:coverage.xml",
+]
 
 [tool.black]
 line-length = 88
@@ -104,7 +116,7 @@ warn_return_any = true
 warn_unused_configs = true
 
 [tool.coverage.run]
-source = ["netrun_ratelimit"]
+source = ["netrun.ratelimit"]
 branch = true
 
 [tool.coverage.report]

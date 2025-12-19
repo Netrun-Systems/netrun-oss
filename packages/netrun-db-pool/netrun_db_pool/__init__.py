@@ -1,18 +1,39 @@
 """
-netrun-db-pool: Production-grade database connection pooling for Netrun Systems services.
+Backwards compatibility shim for netrun-db-pool.
 
-Provides async PostgreSQL connection pools with multi-tenant RLS support,
-health monitoring, and FastAPI integration.
+DEPRECATED: This module provides backwards compatibility for code using the old
+netrun_db_pool import path. New code should use the netrun.db namespace:
 
-v1.1.0: Added netrun-logging integration for structured database operation logging
+    # Old (deprecated, but still works)
+    from netrun_db_pool import AsyncDatabasePool
+
+    # New (recommended)
+    from netrun.db import AsyncDatabasePool
+
+This shim will be removed in version 3.0.0 (estimated: Q2 2026).
 """
 
-from netrun_db_pool.config import PoolConfig
-from netrun_db_pool.health import PoolHealth
-from netrun_db_pool.pool import AsyncDatabasePool
-from netrun_db_pool.tenant import TenantAwareDatabasePool
+import warnings
 
-__version__ = "1.1.0"
+# Issue deprecation warning on import
+warnings.warn(
+    "The 'netrun_db_pool' module is deprecated and will be removed in version 3.0.0. "
+    "Please update your imports to use 'netrun.db' instead:\n"
+    "  from netrun.db import AsyncDatabasePool, TenantAwareDatabasePool, PoolConfig, PoolHealth\n"
+    "See https://github.com/netrunsystems/netrun-db-pool for migration guide.",
+    DeprecationWarning,
+    stacklevel=2,
+)
+
+# Re-export from new location
+from netrun.db import (
+    AsyncDatabasePool,
+    PoolConfig,
+    PoolHealth,
+    TenantAwareDatabasePool,
+)
+
+__version__ = "2.0.0"
 __all__ = [
     "AsyncDatabasePool",
     "TenantAwareDatabasePool",

@@ -1,46 +1,54 @@
 """
-Netrun LLM - Multi-Provider LLM Orchestration with Fallback Chains
+Netrun LLM - Backwards Compatibility Shim
 
-This package provides a unified interface for working with multiple LLM providers
-(Claude, OpenAI, Ollama) with automatic failover, circuit breaker protection,
-and three-tier cognition patterns for optimal response latency.
+This module provides backwards compatibility for code using the old
+netrun_llm namespace. All functionality has been migrated to netrun.llm.
 
-Features:
-    - Multi-adapter fallback chains (Claude -> GPT-4 -> Llama3)
-    - Circuit breaker protection per adapter
-    - Three-tier cognition: Fast ack (<100ms), RAG response (<2s), Deep insight (<5s)
-    - Async-first with sync wrappers
-    - Cost tracking and metrics
-    - Project-agnostic design
+DEPRECATED: This module will be removed in version 3.0.0
+Please update your imports:
+    OLD: from netrun_llm import LLMFallbackChain
+    NEW: from netrun.llm import LLMFallbackChain
 
-v1.1.0: Added netrun-logging integration for structured LLM operation logging
-
-Author: Netrun Systems
-Version: 1.1.0
-License: MIT
+For a complete migration guide, see:
+https://netrunsystems.com/docs/netrun-llm/migration-v2
 """
 
-from netrun_llm.adapters.base import (
+import warnings
+
+# Issue deprecation warning on import
+warnings.warn(
+    "The 'netrun_llm' namespace is deprecated and will be removed in v3.0.0. "
+    "Please update imports to 'netrun.llm'. "
+    "See https://netrunsystems.com/docs/netrun-llm/migration-v2 for details.",
+    DeprecationWarning,
+    stacklevel=2,
+)
+
+# Re-export everything from new namespace for backwards compatibility
+from netrun.llm import (
+    # Core adapters
     BaseLLMAdapter,
     AdapterTier,
     LLMResponse,
-)
-from netrun_llm.adapters.claude import ClaudeAdapter
-from netrun_llm.adapters.openai import OpenAIAdapter
-from netrun_llm.adapters.ollama import OllamaAdapter
-from netrun_llm.chain import LLMFallbackChain
-from netrun_llm.cognition import ThreeTierCognition, CognitionTier
-from netrun_llm.config import LLMConfig
-from netrun_llm.exceptions import (
+    ClaudeAdapter,
+    OpenAIAdapter,
+    OllamaAdapter,
+    # Fallback chain
+    LLMFallbackChain,
+    # Three-tier cognition
+    ThreeTierCognition,
+    CognitionTier,
+    # Configuration
+    LLMConfig,
+    # Exceptions
     LLMError,
     AdapterUnavailableError,
     RateLimitError,
     CircuitBreakerOpenError,
     AllAdaptersFailedError,
+    __version__,
+    __author__,
 )
-
-__version__ = "1.1.0"
-__author__ = "Netrun Systems"
 
 __all__ = [
     # Core adapters
@@ -63,4 +71,7 @@ __all__ = [
     "RateLimitError",
     "CircuitBreakerOpenError",
     "AllAdaptersFailedError",
+    # Version info
+    "__version__",
+    "__author__",
 ]

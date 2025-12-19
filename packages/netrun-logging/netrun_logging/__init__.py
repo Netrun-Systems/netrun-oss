@@ -1,81 +1,37 @@
 """
-Netrun Unified Logging Service
-Structured logging with structlog backend, correlation ID tracking, and Azure App Insights integration
+DEPRECATED: Import from netrun.logging instead.
 
-Usage:
+This compatibility shim will be removed in version 3.0.0.
+
+Migration Guide:
+    # Old (deprecated):
     from netrun_logging import configure_logging, get_logger
+    from netrun_logging import generate_correlation_id
+    from netrun_logging import bind_error_context
+    from netrun_logging.middleware import add_logging_middleware
 
-    configure_logging(app_name="my-service", environment="production")
-    logger = get_logger(__name__)
-    logger.info("application_started", version="1.1.0")
+    # New:
+    from netrun.logging import configure_logging, get_logger
+    from netrun.logging import generate_correlation_id
+    from netrun.logging import bind_error_context
+    from netrun.logging.middleware import add_logging_middleware
 
-New in v1.2.0:
-    - Ecosystem integration helpers for netrun-errors, netrun-auth, netrun-config
-    - bind_error_context() for exception handling integration
-    - bind_request_context() for HTTP request tracking
-    - bind_operation_context() for business operation tracking
-    - log_operation_timing() context manager for timing operations
-    - log_timing() decorator for function timing
-    - create_audit_logger() factory for audit logging
+Version 2.0.0 introduced namespace packaging to align with Python standards
+and enable better package organization across the Netrun ecosystem.
 
-v1.1.0:
-    - Structlog backend for improved performance and flexibility
-    - Async logging support (logger.ainfo, logger.aerror, etc.)
-    - Enhanced context management with bind_context()
-    - OpenTelemetry trace injection
-    - Automatic sensitive field sanitization
+All functionality remains identical - only the import path has changed.
 """
+import warnings
 
-from netrun_logging.logger import configure_logging, get_logger
-from netrun_logging.correlation import (
-    generate_correlation_id,
-    get_correlation_id,
-    set_correlation_id,
-    correlation_id_context,
-    bind_context,
-    clear_context,
-)
-from netrun_logging.context import (
-    LogContext,
-    get_context,
-    set_context,
-    clear_context as clear_log_context,
-)
-from netrun_logging.formatters.json_formatter import JsonFormatter
-from netrun_logging.ecosystem import (
-    bind_error_context,
-    bind_request_context,
-    bind_operation_context,
-    log_operation_timing,
-    log_timing,
-    create_audit_logger,
+warnings.warn(
+    "netrun_logging is deprecated. Use 'from netrun.logging import ...' instead. "
+    "This module will be removed in version 3.0.0.",
+    DeprecationWarning,
+    stacklevel=2
 )
 
-__version__ = "1.2.0"
-__all__ = [
-    # Core configuration
-    "configure_logging",
-    "get_logger",
-    # Correlation ID management
-    "generate_correlation_id",
-    "get_correlation_id",
-    "set_correlation_id",
-    "correlation_id_context",
-    # Context management (structlog)
-    "bind_context",
-    "clear_context",
-    # Legacy context management (LogContext)
-    "LogContext",
-    "get_context",
-    "set_context",
-    "clear_log_context",
-    # Formatters
-    "JsonFormatter",
-    # Ecosystem integration (v1.2.0)
-    "bind_error_context",
-    "bind_request_context",
-    "bind_operation_context",
-    "log_operation_timing",
-    "log_timing",
-    "create_audit_logger",
-]
+# Re-export everything from the new location
+from netrun.logging import *  # noqa: F401, F403
+from netrun.logging import __all__  # noqa: F401
+
+__version__ = "2.0.0"

@@ -15,7 +15,7 @@ import os
 import pytest
 from pydantic import Field, ValidationError
 
-from netrun_config import BaseConfig, get_settings, reload_settings
+from netrun.config import BaseConfig, get_settings, reload_settings
 
 
 class TestBaseConfigDefaults:

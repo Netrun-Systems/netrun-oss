@@ -17,13 +17,13 @@ Date: 2025-11-25
 import pytest
 from unittest.mock import Mock, patch, AsyncMock
 
-from netrun_auth.integrations.oauth import (
+from netrun.auth.integrations.oauth import (
     OAuthProvider,
     OAuthConfig,
     OAuthClient,
     OAuthManager,
 )
-from netrun_auth.core.exceptions import (
+from netrun.auth.core.exceptions import (
     AuthenticationError,
     ConfigurationError,
 )

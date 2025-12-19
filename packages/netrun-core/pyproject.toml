@@ -1,0 +1,39 @@
+[build-system]
+requires = ["hatchling>=1.21.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "netrun-core"
+version = "1.0.0"
+description = "Netrun Systems namespace package foundation - provides the unified 'netrun' namespace for all Netrun packages"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+authors = [
+    {name = "Netrun Systems", email = "dev@netrunsystems.com"},
+    {name = "Daniel Garza", email = "daniel@netrunsystems.com"}
+]
+keywords = ["netrun", "namespace", "foundation", "enterprise", "fastapi"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Framework :: FastAPI",
+    "Typing :: Typed",
+]
+
+[project.urls]
+Homepage = "https://netrunsystems.com"
+Documentation = "https://docs.netrunsystems.com"
+Repository = "https://github.com/netrunsystems/netrun-service-library"
+
+[tool.hatch.build.targets.wheel]
+packages = ["netrun"]
+
+[tool.hatch.build.targets.sdist]
+include = ["/netrun", "/README.md", "/LICENSE"]

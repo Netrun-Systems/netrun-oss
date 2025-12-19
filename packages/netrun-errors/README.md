@@ -2,6 +2,26 @@
 
 Unified error handling for Netrun Systems FastAPI applications.
 
+## Version 2.0.0 - Namespace Package Migration
+
+**IMPORTANT:** Starting with version 2.0.0, netrun-errors uses namespace packaging. The import path has changed from `netrun_errors` to `netrun.errors`.
+
+### Migration Guide
+
+```python
+# OLD (deprecated, still works but shows warning):
+from netrun_errors import NetrunException, InvalidCredentialsError
+from netrun_errors import install_exception_handlers, install_error_logging_middleware
+
+# NEW (recommended):
+from netrun.errors import NetrunException, InvalidCredentialsError
+from netrun.errors import install_exception_handlers, install_error_logging_middleware
+```
+
+**Backwards Compatibility:** The old `netrun_errors` import path continues to work in version 2.x with a deprecation warning. It will be removed in version 3.0.0.
+
+**Why this change?** Namespace packaging aligns with Python standards and enables better organization across the Netrun ecosystem, allowing multiple related packages under the `netrun.*` namespace.
+
 ## Features
 
 - **Structured Error Responses**: Consistent JSON error format across all services
@@ -22,7 +42,7 @@ pip install netrun-errors
 
 ```python
 from fastapi import FastAPI
-from netrun_errors import (
+from netrun.errors import (
     install_exception_handlers,
     install_error_logging_middleware,
     InvalidCredentialsError,
@@ -81,7 +101,7 @@ All errors return structured JSON responses:
 - **AuthenticationRequiredError**: Endpoint requires authentication
 
 ```python
-from netrun_errors import InvalidCredentialsError, TokenExpiredError
+from netrun.errors import InvalidCredentialsError, TokenExpiredError
 
 # Example usage
 raise InvalidCredentialsError()
@@ -94,7 +114,7 @@ raise TokenExpiredError(message="Your session has expired")
 - **TenantAccessDeniedError**: Cross-tenant access attempt
 
 ```python
-from netrun_errors import InsufficientPermissionsError, TenantAccessDeniedError
+from netrun.errors import InsufficientPermissionsError, TenantAccessDeniedError
 
 # Example usage
 raise InsufficientPermissionsError(
@@ -113,7 +133,7 @@ raise TenantAccessDeniedError(
 - **ResourceConflictError**: Operation conflicts with existing state
 
 ```python
-from netrun_errors import ResourceNotFoundError, ResourceConflictError
+from netrun.errors import ResourceNotFoundError, ResourceConflictError
 
 # Example usage
 raise ResourceNotFoundError(
@@ -133,7 +153,7 @@ raise ResourceConflictError(
 - **TemporalUnavailableError**: Workflow engine unavailable
 
 ```python
-from netrun_errors import ServiceUnavailableError, TemporalUnavailableError
+from netrun.errors import ServiceUnavailableError, TemporalUnavailableError
 
 # Example usage
 raise ServiceUnavailableError(
@@ -152,7 +172,7 @@ raise TemporalUnavailableError(
 Every exception automatically generates a unique correlation ID for request tracking:
 
 ```python
-from netrun_errors import ResourceNotFoundError
+from netrun.errors import ResourceNotFoundError
 
 try:
     raise ResourceNotFoundError(resource_type="User", resource_id="123")
@@ -170,7 +190,7 @@ Correlation IDs are also:
 Add context-specific information to error responses:
 
 ```python
-from netrun_errors import InvalidCredentialsError
+from netrun.errors import InvalidCredentialsError
 
 raise InvalidCredentialsError(
     message="Invalid credentials",
@@ -204,7 +224,7 @@ The `install_error_logging_middleware()` function provides:
 
 ```python
 from fastapi import FastAPI, Request
-from netrun_errors import install_error_logging_middleware
+from netrun.errors import install_error_logging_middleware
 import logging
 
 app = FastAPI()
@@ -257,13 +277,13 @@ pytest --cov-report=html
 
 ```bash
 # Format code with black
-black netrun_errors tests
+black netrun/errors tests
 
 # Lint with ruff
-ruff check netrun_errors tests
+ruff check netrun/errors tests
 
 # Type check with mypy
-mypy netrun_errors
+mypy netrun/errors
 ```
 
 ## License
@@ -282,7 +302,7 @@ For issues, questions, or feature requests, please contact:
 
 ---
 
-**Version**: 1.0.0
+**Version**: 2.0.0
 **Author**: Netrun Systems
 **Python**: 3.11+
 **Framework**: FastAPI 0.115+

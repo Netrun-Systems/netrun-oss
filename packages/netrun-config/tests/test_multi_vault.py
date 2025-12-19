@@ -4,8 +4,8 @@ Tests for multi-vault Azure Key Vault support.
 
 import pytest
 
-from netrun_config.cache import SecretCacheConfig
-from netrun_config.multi_vault import MultiVaultClient, VaultConfig
+from netrun.config.cache import SecretCacheConfig
+from netrun.config.multi_vault import MultiVaultClient, VaultConfig
 
 # Mark all tests as requiring Azure SDK
 pytestmark = pytest.mark.skipif(

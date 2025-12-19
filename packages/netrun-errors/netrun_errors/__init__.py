@@ -1,86 +1,35 @@
 """
-Netrun Unified Error Handling Package.
+DEPRECATED: Import from netrun.errors instead.
 
-A comprehensive error handling library for FastAPI applications with:
-- Structured JSON error responses
-- Automatic correlation ID generation (integrates with netrun-logging if available)
-- Machine-readable error codes
-- Global exception handlers
-- Request/response logging middleware
+This compatibility shim will be removed in version 3.0.0.
 
-Version: 1.1.0
-Author: Netrun Systems
-License: MIT
+Migration Guide:
+    # Old (deprecated):
+    from netrun_errors import NetrunException
+    from netrun_errors import InvalidCredentialsError
+    from netrun_errors import install_exception_handlers
 
-v1.1.0 Changes:
-- Added netrun-logging integration for correlation ID consistency
-- Added RateLimitExceededError (HTTP 429)
-- Added BadGatewayError (HTTP 502)
-- Added GatewayTimeoutError (HTTP 504)
-- Added ExternalServiceError for generic external API failures
-- Updated handlers to use netrun-logging when available
+    # New:
+    from netrun.errors import NetrunException
+    from netrun.errors import InvalidCredentialsError
+    from netrun.errors import install_exception_handlers
+
+Version 2.0.0 introduced namespace packaging to align with Python standards
+and enable better package organization across the Netrun ecosystem.
+
+All functionality remains identical - only the import path has changed.
 """
+import warnings
 
-__version__ = "1.1.0"
-
-# Base exception
-from .base import NetrunException
-
-# Authentication exceptions
-from .auth import (
-    AuthenticationRequiredError,
-    InvalidCredentialsError,
-    TokenExpiredError,
-    TokenInvalidError,
-    TokenRevokedError,
+warnings.warn(
+    "netrun_errors is deprecated. Use 'from netrun.errors import ...' instead. "
+    "This module will be removed in version 3.0.0.",
+    DeprecationWarning,
+    stacklevel=2
 )
 
-# Authorization exceptions
-from .authorization import InsufficientPermissionsError, TenantAccessDeniedError
+# Re-export everything from the new location
+from netrun.errors import *  # noqa: F401, F403
+from netrun.errors import __all__  # noqa: F401
 
-# Resource exceptions
-from .resource import ResourceConflictError, ResourceNotFoundError
-
-# Service exceptions
-from .service import (
-    ServiceUnavailableError,
-    TemporalUnavailableError,
-    RateLimitExceededError,
-    BadGatewayError,
-    GatewayTimeoutError,
-    ExternalServiceError,
-)
-
-# Exception handlers
-from .handlers import install_exception_handlers
-
-# Middleware
-from .middleware import install_error_logging_middleware
-
-__all__ = [
-    # Base
-    "NetrunException",
-    # Authentication
-    "InvalidCredentialsError",
-    "TokenExpiredError",
-    "TokenInvalidError",
-    "TokenRevokedError",
-    "AuthenticationRequiredError",
-    # Authorization
-    "InsufficientPermissionsError",
-    "TenantAccessDeniedError",
-    # Resource
-    "ResourceNotFoundError",
-    "ResourceConflictError",
-    # Service
-    "ServiceUnavailableError",
-    "TemporalUnavailableError",
-    "RateLimitExceededError",
-    "BadGatewayError",
-    "GatewayTimeoutError",
-    "ExternalServiceError",
-    # Handlers
-    "install_exception_handlers",
-    # Middleware
-    "install_error_logging_middleware",
-]
+__version__ = "2.0.0"

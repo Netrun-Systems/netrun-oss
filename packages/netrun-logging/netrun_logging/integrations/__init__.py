@@ -1,5 +1,15 @@
-"""Integrations for external logging services."""
+"""
+DEPRECATED: Import from netrun.logging.integrations instead.
+This compatibility shim will be removed in version 3.0.0.
+"""
+import warnings
 
-from netrun_logging.integrations.azure_insights import configure_azure_insights
+warnings.warn(
+    "netrun_logging.integrations is deprecated. Use 'from netrun.logging.integrations import ...' instead. "
+    "This module will be removed in version 3.0.0.",
+    DeprecationWarning,
+    stacklevel=2
+)
 
-__all__ = ["configure_azure_insights"]
+from netrun.logging.integrations import *  # noqa: F401, F403
+from netrun.logging.integrations import __all__  # noqa: F401

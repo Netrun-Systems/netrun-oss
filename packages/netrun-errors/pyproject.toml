@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "netrun-errors"
-version = "1.1.0"
+version = "2.0.0"
 description = "Unified error handling for Netrun Systems FastAPI applications"
 readme = "README.md"
 license = { text = "MIT" }
@@ -39,13 +39,14 @@ classifiers = [
 ]
 requires-python = ">=3.11"
 dependencies = [
+    "netrun-core>=1.0.0",
     "fastapi>=0.115.0",
     "starlette>=0.41.0",
 ]
 
 [project.optional-dependencies]
 logging = [
-    "netrun-logging>=1.1.0",
+    "netrun-logging>=2.0.0",
 ]
 dev = [
     "pytest>=8.3.0",
@@ -55,7 +56,7 @@ dev = [
     "black>=24.8.0",
     "ruff>=0.7.0",
     "mypy>=1.13.0",
-    "netrun-logging>=1.1.0",
+    "netrun-logging>=2.0.0",
 ]
 
 [project.urls]
@@ -65,7 +66,7 @@ Repository = "https://github.com/netrun-systems/netrun-errors"
 "Bug Tracker" = "https://github.com/netrun-systems/netrun-errors/issues"
 
 [tool.hatch.build.targets.wheel]
-packages = ["netrun_errors"]
+packages = ["netrun", "netrun_errors"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -74,7 +75,7 @@ python_classes = ["Test*"]
 python_functions = ["test_*"]
 addopts = [
     "--verbose",
-    "--cov=netrun_errors",
+    "--cov=netrun/errors",
     "--cov-report=term-missing",
     "--cov-report=html",
     "--cov-fail-under=90",
@@ -82,8 +83,8 @@ addopts = [
 asyncio_mode = "auto"
 
 [tool.coverage.run]
-source = ["netrun_errors"]
-omit = ["tests/*"]
+source = ["netrun/errors"]
+omit = ["tests/*", "netrun_errors/*"]
 
 [tool.coverage.report]
 exclude_lines = [

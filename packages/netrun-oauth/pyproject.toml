@@ -1,0 +1,134 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "netrun-oauth"
+version = "2.0.0"
+description = "Reusable OAuth 2.0 adapters for multi-tenant SaaS applications"
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+authors = [
+    {name = "Netrun Systems", email = "support@netrunsystems.com"}
+]
+keywords = ["oauth", "oauth2", "authentication", "saas", "multi-tenant", "microsoft", "google", "salesforce"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Internet :: WWW/HTTP :: Session",
+    "Topic :: Security",
+]
+
+dependencies = [
+    "netrun-core>=2.0.0",
+    "httpx>=0.25.0",
+    "cryptography>=41.0.0",
+]
+
+[project.optional-dependencies]
+azure = [
+    "azure-identity>=1.14.0",
+    "azure-keyvault-secrets>=4.7.0",
+]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "pytest-asyncio>=0.21.0",
+    "black>=23.0.0",
+    "ruff>=0.1.0",
+    "mypy>=1.0.0",
+]
+all = [
+    "netrun-oauth[azure,dev]",
+]
+
+
+[tool.hatch.build.targets.wheel]
+packages = ["netrun", "netrun_oauth"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/netrun",
+    "/netrun_oauth",
+    "/tests",
+    "README.md",
+    "pyproject.toml",
+]
+
+[project.urls]
+Homepage = "https://netrunsystems.com"
+Documentation = "https://github.com/netrunsystems/netrun-service-library"
+Repository = "https://github.com/netrunsystems/netrun-service-library"
+Issues = "https://github.com/netrunsystems/netrun-service-library/issues"
+
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+asyncio_mode = "auto"
+addopts = [
+    "--verbose",
+    "--cov=netrun.oauth",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+    "--cov-report=xml",
+]
+
+[tool.coverage.run]
+source = ["netrun.oauth"]
+omit = ["tests/*", "**/__pycache__/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+]
+
+[tool.black]
+line-length = 100
+target-version = ['py38', 'py39', 'py310', 'py311']
+include = '\.pyi?$'
+
+[tool.ruff]
+line-length = 100
+target-version = "py38"
+select = [
+    "E",   # pycodestyle errors
+    "W",   # pycodestyle warnings
+    "F",   # pyflakes
+    "I",   # isort
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "UP",  # pyupgrade
+]
+ignore = [
+    "E501",  # line too long (handled by black)
+    "B008",  # do not perform function calls in argument defaults
+]
+
+[tool.mypy]
+python_version = "3.8"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+check_untyped_defs = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true

@@ -6,8 +6,8 @@ import pytest
 from pydantic import Field
 from pydantic_settings import BaseSettings
 
-from netrun_config.multi_vault import VaultConfig
-from netrun_config.settings_source import (
+from netrun.config.multi_vault import VaultConfig
+from netrun.config.settings_source import (
     AzureKeyVaultRefreshableSettingsSource,
     AzureKeyVaultSettingsSource,
 )

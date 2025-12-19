@@ -142,7 +142,7 @@ def settings_cache_reset():
 
     This ensures test isolation when using cached settings.
     """
-    from netrun_config import get_settings
+    from netrun.config import get_settings
 
     # Clear cache before test
     get_settings.__wrapped__.cache_clear()

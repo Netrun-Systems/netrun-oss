@@ -1,25 +1,38 @@
 """
-netrun-cors: Enterprise CORS middleware presets for FastAPI applications.
+DEPRECATED: Import from netrun.cors instead.
 
-Provides standardized CORS configurations for development, staging, production,
-and OAuth-enabled environments.
+This compatibility shim will be removed in version 3.0.0.
+Update your imports:
+    # Old (deprecated):
+    from netrun_cors import ...
 
-v1.1.0: Added netrun-logging integration for structured CORS logging
+    # New:
+    from netrun.cors import ...
 
-Usage:
-    from netrun_cors import CORSPreset
+Migration Guide:
+    1. Replace all imports:
+       - from netrun_cors import ... → from netrun.cors import ...
 
-    app.add_middleware(CORSPreset.development())
-    # or
-    app.add_middleware(CORSPreset.production(origins=["https://app.example.com"]))
+    2. Update requirements.txt or pyproject.toml:
+       - Add: netrun-core>=2.0.0
+       - Update: netrun-cors>=2.0.0
+
+    3. Run tests to verify compatibility
+
+Author: Netrun Systems
+Version: 2.0.0 (Compatibility Shim)
+Date: 2025-12-18
 """
+import warnings
 
-__version__ = "1.1.0"
-__author__ = "Netrun Systems"
-__email__ = "support@netrunsystems.com"
+warnings.warn(
+    "netrun_cors is deprecated. Use 'from netrun.cors import ...' instead. "
+    "This compatibility module will be removed in version 3.0.0. "
+    "See migration guide: https://docs.netrunsystems.com/cors/migration",
+    DeprecationWarning,
+    stacklevel=2
+)
 
-from netrun_cors.presets import CORSPreset
-from netrun_cors.config import CORSConfig
-from netrun_cors.middleware import CORSMiddleware
-
-__all__ = ["CORSPreset", "CORSConfig", "CORSMiddleware", "__version__"]
+# Re-export all public APIs from netrun.cors
+from netrun.cors import *
+from netrun.cors import __all__

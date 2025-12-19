@@ -1,73 +1,40 @@
 """
-netrun-ratelimit: Distributed rate limiting with token bucket algorithm.
+DEPRECATED: Import from netrun.ratelimit instead.
 
-This package provides:
-- Token bucket rate limiting algorithm
-- Redis backend for distributed systems
-- In-memory backend for single-instance applications
-- FastAPI middleware integration
-- Route decorators for fine-grained control
-- Per-user and per-endpoint rate limits
+This compatibility shim will be removed in version 3.0.0.
+Update your imports:
+    # Old (deprecated):
+    from netrun_ratelimit import RateLimiter
 
-Example:
-    from fastapi import FastAPI
-    from netrun_ratelimit import RateLimiter, RedisBackend, RateLimitMiddleware
+    # New:
+    from netrun.ratelimit import RateLimiter
 
-    app = FastAPI()
+Migration Guide:
+    1. Replace all imports:
+       - from netrun_ratelimit import ... → from netrun.ratelimit import ...
+       - from netrun_ratelimit.backends import ... → from netrun.ratelimit.backends import ...
+       - from netrun_ratelimit.middleware import ... → from netrun.ratelimit.middleware import ...
 
-    # Create rate limiter with Redis backend
-    backend = RedisBackend(redis_url="redis://localhost:6379")
-    limiter = RateLimiter(backend=backend, rate=100, period=60)
+    2. Update requirements.txt or pyproject.toml:
+       - Add: netrun-core>=2.0.0
+       - Update: netrun-ratelimit>=2.0.0
 
-    # Add middleware
-    app.add_middleware(RateLimitMiddleware, limiter=limiter)
+    3. Run tests to verify compatibility
+
+Author: Netrun Systems
+Version: 2.0.0 (Compatibility Shim)
+Date: 2025-12-18
 """
+import warnings
 
-from netrun_ratelimit.bucket import TokenBucket, RateLimiter
-from netrun_ratelimit.backends import (
-    RateLimitBackend,
-    MemoryBackend,
-    RedisBackend,
-)
-from netrun_ratelimit.config import RateLimitConfig
-from netrun_ratelimit.exceptions import (
-    RateLimitError,
-    RateLimitExceeded,
-    RateLimitBackendError,
+warnings.warn(
+    "netrun_ratelimit is deprecated. Use 'from netrun.ratelimit import ...' instead. "
+    "This compatibility module will be removed in version 3.0.0. "
+    "See migration guide: https://docs.netrunsystems.com/ratelimit/migration",
+    DeprecationWarning,
+    stacklevel=2
 )
 
-__version__ = "1.0.0"
-__author__ = "Daniel Garza"
-__email__ = "daniel@netrunsystems.com"
-
-__all__ = [
-    # Core
-    "TokenBucket",
-    "RateLimiter",
-    # Backends
-    "RateLimitBackend",
-    "MemoryBackend",
-    "RedisBackend",
-    # Config
-    "RateLimitConfig",
-    # Exceptions
-    "RateLimitError",
-    "RateLimitExceeded",
-    "RateLimitBackendError",
-    # Version
-    "__version__",
-]
-
-# Lazy imports for optional dependencies
-def __getattr__(name: str):
-    """Lazy import for optional FastAPI components."""
-    if name == "RateLimitMiddleware":
-        from netrun_ratelimit.middleware import RateLimitMiddleware
-        return RateLimitMiddleware
-    if name == "rate_limit":
-        from netrun_ratelimit.decorators import rate_limit
-        return rate_limit
-    if name == "RateLimitRoute":
-        from netrun_ratelimit.decorators import RateLimitRoute
-        return RateLimitRoute
-    raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
+# Re-export all public APIs from netrun.ratelimit
+from netrun.ratelimit import *
+from netrun.ratelimit import __all__

@@ -16,13 +16,13 @@ from fastapi import FastAPI, Request
 from fastapi.testclient import TestClient
 from starlette.responses import JSONResponse
 
-from netrun_auth.rbac_casbin import CasbinRBACManager
-from netrun_auth.middleware_casbin import (
+from netrun.auth.rbac_casbin import CasbinRBACManager
+from netrun.auth.middleware_casbin import (
     CasbinAuthMiddleware,
     path_prefix_mapper,
     regex_resource_mapper,
 )
-from netrun_auth.types import User
+from netrun.auth.types import User
 
 
 @pytest.fixture
@@ -344,7 +344,7 @@ class TestDefaultMappers:
 
     def test_default_resource_mapper(self):
         """Test default resource mapper behavior."""
-        from netrun_auth.middleware_casbin import CasbinAuthMiddleware
+        from netrun.auth.middleware_casbin import CasbinAuthMiddleware
 
         class MockRequest:
             class URL:
@@ -362,7 +362,7 @@ class TestDefaultMappers:
 
     def test_default_action_mapper(self):
         """Test default action mapper behavior."""
-        from netrun_auth.middleware_casbin import CasbinAuthMiddleware
+        from netrun.auth.middleware_casbin import CasbinAuthMiddleware
 
         class MockRequest:
             method = "GET"

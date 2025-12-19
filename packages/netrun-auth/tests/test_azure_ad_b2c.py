@@ -19,7 +19,7 @@ from unittest.mock import AsyncMock, MagicMock, patch
 from datetime import datetime, timezone
 import time
 
-from netrun_auth.integrations.azure_ad_b2c import (
+from netrun.auth.integrations.azure_ad_b2c import (
     AzureADB2CConfig,
     AzureADB2CClient,
     B2CUserFlow,
@@ -31,7 +31,7 @@ from netrun_auth.integrations.azure_ad_b2c import (
     extract_bearer_token,
     is_b2c_configured,
 )
-from netrun_auth.exceptions import (
+from netrun.auth.exceptions import (
     TokenInvalidError,
     TokenExpiredError,
     AuthenticationError,
@@ -375,7 +375,7 @@ class TestFastAPIHelpers:
     def test_initialize_and_get_client(self, b2c_config: AzureADB2CConfig):
         """Test client initialization and retrieval."""
         # Clear any existing client
-        import netrun_auth.integrations.azure_ad_b2c as b2c_module
+        import netrun.auth.integrations.azure_ad_b2c as b2c_module
         b2c_module._b2c_client = None
 
         # Should raise before initialization
@@ -398,7 +398,7 @@ class TestFastAPIHelpers:
     @pytest.mark.asyncio
     async def test_get_current_user_b2c(self, b2c_config: AzureADB2CConfig, sample_claims: dict):
         """Test FastAPI dependency for getting current user."""
-        import netrun_auth.integrations.azure_ad_b2c as b2c_module
+        import netrun.auth.integrations.azure_ad_b2c as b2c_module
         b2c_module._b2c_client = None
 
         # Initialize client

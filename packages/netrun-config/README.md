@@ -2,6 +2,21 @@
 
 Unified configuration management for Netrun Systems portfolio projects.
 
+## Version 2.0.0 - Namespace Package Migration
+
+**BREAKING CHANGE**: netrun-config v2.0.0 migrates to namespace package structure (`netrun.config`).
+
+**Migration Required**:
+```python
+# OLD (deprecated, will be removed in v3.0.0)
+from netrun_config import BaseConfig, Field, get_settings
+
+# NEW (recommended)
+from netrun.config import BaseConfig, Field, get_settings
+```
+
+See [Migration Guide](#migration-from-v1x-to-v20) for detailed instructions.
+
 ## Features
 
 - **Type-Safe Configuration**: Built on Pydantic v2 with automatic validation
@@ -10,6 +25,7 @@ Unified configuration management for Netrun Systems portfolio projects.
 - **Security Best Practices**: 32-char secret validation, SecretStr support, CORS parsing
 - **Caching**: LRU cache for performance optimization
 - **Framework Integration**: Works seamlessly with FastAPI, Flask, Django
+- **Namespace Package**: Part of the `netrun.*` namespace for better organization
 
 ## Installation
 
@@ -28,7 +44,7 @@ pip install netrun-config[azure]
 ### Basic Usage
 
 ```python
-from netrun_config import BaseConfig, Field, get_settings
+from netrun.config import BaseConfig, Field, get_settings
 
 class MyAppSettings(BaseConfig):
     app_name: str = Field(default="MyApp")
@@ -55,7 +71,7 @@ CORS_ORIGINS=http://localhost:3000,http://localhost:8080
 ### Azure Key Vault Integration
 
 ```python
-from netrun_config import BaseConfig, KeyVaultMixin, Field
+from netrun.config import BaseConfig, KeyVaultMixin, Field
 
 class ProductionSettings(BaseConfig, KeyVaultMixin):
     KEY_VAULT_URL: str = Field(default=None, env="KEY_VAULT_URL")
@@ -165,7 +181,7 @@ BaseConfig(log_level="TRACE")
 ```python
 from typing import Annotated
 from fastapi import Depends, FastAPI
-from netrun_config import BaseConfig, get_settings
+from netrun.config import BaseConfig, get_settings
 
 app = FastAPI()
 SettingsDep = Annotated[BaseConfig, Depends(get_settings)]
@@ -181,7 +197,7 @@ Override settings in tests:
 
 ```python
 import pytest
-from netrun_config import BaseConfig, get_settings, reload_settings
+from netrun.config import BaseConfig, get_settings, reload_settings
 
 @pytest.fixture
 def test_settings(monkeypatch):
@@ -284,9 +300,79 @@ MIT License - Copyright (c) 2025 Netrun Systems
 
 Daniel Garza (daniel@netrunsystems.com)
 
+## Migration from v1.x to v2.0
+
+### What Changed?
+
+**v2.0.0** introduces a **namespace package structure** for better organization and alignment with Python packaging best practices.
+
+### Before (v1.x)
+```python
+from netrun_config import BaseConfig, get_settings, KeyVaultMixin
+```
+
+### After (v2.0+)
+```python
+from netrun.config import BaseConfig, get_settings, KeyVaultMixin
+```
+
+### Backwards Compatibility
+
+A **deprecation shim** is provided in v2.0.0 to maintain backwards compatibility:
+- Old imports (`netrun_config`) still work but issue a `DeprecationWarning`
+- This compatibility layer will be **removed in v3.0.0** (planned Q2 2026)
+- Update your code now to avoid breaking changes
+
+### Migration Steps
+
+1. **Update imports in your codebase**:
+   ```bash
+   # Find all occurrences
+   grep -r "from netrun_config" .
+   grep -r "import netrun_config" .
+
+   # Replace with new namespace
+   # OLD: from netrun_config import BaseConfig
+   # NEW: from netrun.config import BaseConfig
+   ```
+
+2. **Update dependencies** (if using version pinning):
+   ```toml
+   # pyproject.toml
+   dependencies = [
+       "netrun-config>=2.0.0"  # Updated version
+   ]
+   ```
+
+3. **Test your application**:
+   ```bash
+   # Run tests to ensure no import errors
+   pytest
+
+   # Check for deprecation warnings
+   python -W default::DeprecationWarning your_app.py
+   ```
+
+### Build System Changes
+
+**v2.0.0** also migrates from **setuptools** to **Hatchling** for better namespace package support:
+- **Before**: `setuptools.build_meta`
+- **After**: `hatchling.build`
+
+This change is transparent to users but provides better PEP 420 namespace support.
+
+### What's New in v2.0.0
+
+- Namespace package structure (`netrun.config`)
+- Hatchling build backend (improved namespace support)
+- PEP 561 `py.typed` marker for better type checking
+- Updated dependencies to namespace-aware netrun packages:
+  - `netrun-errors>=2.0.0`
+  - `netrun-logging>=2.0.0`
+
 ## Version
 
-1.1.0 - December 2025
+2.0.0 - December 2025
 
 ### Latest Release Notes
 

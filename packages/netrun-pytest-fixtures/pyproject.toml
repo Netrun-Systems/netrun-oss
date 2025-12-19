@@ -1,10 +1,10 @@
 [build-system]
-requires = ["setuptools>=68.0", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "netrun-pytest-fixtures"
-version = "1.1.0"
+version = "2.1.0"
 description = "Unified pytest fixtures for Netrun Systems services - eliminates 71% fixture duplication"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -41,6 +41,7 @@ classifiers = [
 ]
 
 dependencies = [
+    "netrun-core>=2.0.0",
     "pytest>=7.0.0",
     "pytest-asyncio>=0.21.0",
     "cryptography>=41.0.0",
@@ -52,7 +53,7 @@ dev = [
     "black>=23.0.0",
     "ruff>=0.1.0",
     "mypy>=1.5.0",
-    "netrun-logging>=1.2.0",
+    "netrun-logging>=2.0.0",
 ]
 
 # Optional dependencies for specific fixture modules
@@ -78,7 +79,7 @@ yaml = [
 ]
 
 logging = [
-    "netrun-logging>=1.2.0",
+    "netrun-logging>=2.0.0",
 ]
 
 # All optional dependencies
@@ -89,7 +90,20 @@ all = [
     "fastapi>=0.100.0",
     "redis>=4.6.0",
     "pyyaml>=6.0.0",
-    "netrun-logging>=1.2.0",
+    "netrun-logging>=2.0.0",
+]
+
+
+[tool.hatch.build.targets.wheel]
+packages = ["netrun", "netrun_pytest_fixtures"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/netrun",
+    "/netrun_pytest_fixtures",
+    "/tests",
+    "README.md",
+    "pyproject.toml",
 ]
 
 [project.urls]
@@ -118,7 +132,7 @@ addopts = [
     "-ra",
     "--strict-markers",
     "--strict-config",
-    "--cov=netrun_pytest_fixtures",
+    "--cov=netrun.testing",
     "--cov-report=term-missing:skip-covered",
     "--cov-report=html",
     "--cov-report=xml",
@@ -131,7 +145,7 @@ markers = [
 ]
 
 [tool.coverage.run]
-source = ["netrun_pytest_fixtures"]
+source = ["netrun.testing"]
 branch = true
 parallel = true
 

@@ -15,7 +15,7 @@ from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
-from netrun_config import BaseConfig, Field, KeyVaultMixin
+from netrun.config import BaseConfig, Field, KeyVaultMixin
 
 
 class TestKeyVaultMixinWithoutAzure:

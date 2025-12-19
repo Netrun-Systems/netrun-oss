@@ -2,6 +2,34 @@
 
 Production-grade async database connection pooling for Netrun Systems services.
 
+## IMPORTANT: Migration to v2.0.0 (Namespace Structure)
+
+**Version 2.0.0 introduces a breaking change in import paths.** The package has been migrated to the `netrun.db` namespace structure for consistency with other Netrun packages.
+
+### New Import Path
+
+```python
+# Old (v1.x - deprecated but still works with warnings)
+from netrun_db_pool import AsyncDatabasePool, PoolConfig
+from netrun_db_pool.middleware import get_db_dependency
+
+# New (v2.0+ - recommended)
+from netrun.db import AsyncDatabasePool, PoolConfig
+from netrun.db.middleware import get_db_dependency
+```
+
+### Backwards Compatibility
+
+Version 2.0.0 maintains full backwards compatibility through deprecation shims. Old imports will continue to work but will issue `DeprecationWarning`. The old import path will be removed in version 3.0.0 (estimated Q2 2026).
+
+### Migration Checklist
+
+- [ ] Update all imports from `netrun_db_pool` to `netrun.db`
+- [ ] Update all imports from `netrun_db_pool.middleware` to `netrun.db.middleware`
+- [ ] Update `requirements.txt` or `pyproject.toml` to use `netrun-db-pool>=2.0.0`
+- [ ] Test thoroughly in development environment
+- [ ] Deploy to production
+
 ## Features
 
 - **AsyncPG Performance**: SQLAlchemy 2.0+ with asyncpg driver for maximum PostgreSQL performance
@@ -32,7 +60,7 @@ pip install netrun-db-pool[dev]
 ### Basic Usage
 
 ```python
-from netrun_db_pool import AsyncDatabasePool, PoolConfig
+from netrun.db import AsyncDatabasePool, PoolConfig
 from sqlalchemy import select, text
 
 # Create pool from environment variables
@@ -50,8 +78,8 @@ async with pool.get_session() as session:
 ```python
 from fastapi import FastAPI, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
-from netrun_db_pool import AsyncDatabasePool
-from netrun_db_pool.middleware import get_db_dependency
+from netrun.db import AsyncDatabasePool
+from netrun.db.middleware import get_db_dependency
 
 app = FastAPI()
 pool = AsyncDatabasePool.from_env()
@@ -82,8 +110,8 @@ async def db_health():
 
 ```python
 from fastapi import FastAPI, Request, Depends
-from netrun_db_pool import TenantAwareDatabasePool
-from netrun_db_pool.middleware import (
+from netrun.db import TenantAwareDatabasePool
+from netrun.db.middleware import (
     get_tenant_db_dependency,
     TenantContextMiddleware,
 )
@@ -159,7 +187,7 @@ DB_ECHO=false                  # Enable SQLAlchemy query logging (dev only)
 ### Programmatic Configuration
 
 ```python
-from netrun_db_pool import AsyncDatabasePool, PoolConfig
+from netrun.db import AsyncDatabasePool, PoolConfig
 
 config = PoolConfig(
     database_url="postgresql+asyncpg://user:pass@localhost/db",
@@ -302,7 +330,7 @@ async with pool.get_session() as session:
 
 ```python
 import pytest
-from netrun_db_pool import AsyncDatabasePool, PoolConfig
+from netrun.db import AsyncDatabasePool, PoolConfig
 
 @pytest.fixture
 async def db_pool():
@@ -378,8 +406,8 @@ async def get_db():
         yield session
 
 # After
-from netrun_db_pool import AsyncDatabasePool
-from netrun_db_pool.middleware import get_db_dependency
+from netrun.db import AsyncDatabasePool
+from netrun.db.middleware import get_db_dependency
 
 pool = AsyncDatabasePool.from_env()
 get_db = get_db_dependency(pool)
@@ -404,7 +432,7 @@ async with pool.acquire() as conn:
     rows = await conn.fetch("SELECT * FROM users")
 
 # After
-from netrun_db_pool import AsyncDatabasePool
+from netrun.db import AsyncDatabasePool
 
 pool = AsyncDatabasePool.from_env()
 await pool.initialize()
@@ -441,4 +469,6 @@ Based on production patterns from 8+ services across the Netrun portfolio.
 
 ---
 
-**netrun-db-pool v1.0.0** - Production-grade database pooling for the async era.
+**netrun-db-pool v2.0.0** - Production-grade database pooling for the async era.
+
+**Breaking Changes in v2.0.0**: Migrated to `netrun.db` namespace. See migration guide above.
