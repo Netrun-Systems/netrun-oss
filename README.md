@@ -1,6 +1,6 @@
 # Netrun Open Source Libraries
 
-Open source Python libraries from [Netrun Systems](https://netrunsystems.com) - 14 production-tested packages for FastAPI applications including authentication, configuration, logging, CORS, rate limiting, database pooling, LLM orchestration, RBAC, and testing fixtures.
+Open source Python libraries from [Netrun Systems](https://netrunsystems.com) - 18 production-tested packages for FastAPI applications including authentication, configuration, logging, CORS, rate limiting, database pooling, LLM orchestration, RBAC, caching, resilience patterns, validation, WebSocket management, and testing fixtures.
 
 > **v2.0.0 Release** - Now with PEP 420 namespace packages! Use `from netrun.auth import ...` instead of `from netrun_auth import ...`. Old imports still work but are deprecated.
 
@@ -10,18 +10,22 @@ Open source Python libraries from [Netrun Systems](https://netrunsystems.com) - 
 |---------|---------|------|-------------|
 | **netrun-core** | 2.0.0 | [PyPI](https://pypi.org/project/netrun-core/) | Root namespace package for `netrun.*` imports |
 | **netrun-auth** | 2.0.0 | [PyPI](https://pypi.org/project/netrun-auth/) | Unified authentication - JWT, OAuth2, Azure AD, Casbin RBAC |
+| **netrun-cache** | 1.0.0 | [PyPI](https://pypi.org/project/netrun-cache/) | Redis and in-memory caching with decorators and TTL |
 | **netrun-config** | 2.0.0 | [PyPI](https://pypi.org/project/netrun-config/) | Configuration management with Azure Key Vault, TTL caching |
-| **netrun-logging** | 2.0.0 | [PyPI](https://pypi.org/project/netrun-logging/) | Structured logging with Azure App Insights integration |
-| **netrun-errors** | 2.0.0 | [PyPI](https://pypi.org/project/netrun-errors/) | Unified error handling for FastAPI applications |
 | **netrun-cors** | 2.0.0 | [PyPI](https://pypi.org/project/netrun-cors/) | Enterprise CORS middleware presets for FastAPI |
 | **netrun-db-pool** | 2.0.0 | [PyPI](https://pypi.org/project/netrun-db-pool/) | Async database connection pooling with tenant isolation |
-| **netrun-llm** | 2.0.0 | [PyPI](https://pypi.org/project/netrun-llm/) | Multi-provider LLM orchestration with policies & telemetry |
-| **netrun-rbac** | 2.0.0 | [PyPI](https://pypi.org/project/netrun-rbac/) | Role-based access control with tenant isolation testing |
-| **netrun-oauth** | 2.0.0 | [PyPI](https://pypi.org/project/netrun-oauth/) | OAuth 2.0 adapters for 12+ providers |
+| **netrun-dogfood** | 2.0.0 | [PyPI](https://pypi.org/project/netrun-dogfood/) | Internal integration testing MCP server |
 | **netrun-env** | 2.0.0 | [PyPI](https://pypi.org/project/netrun-env/) | Schema-based environment variable validator |
+| **netrun-errors** | 2.0.0 | [PyPI](https://pypi.org/project/netrun-errors/) | Unified error handling for FastAPI applications |
+| **netrun-llm** | 2.0.0 | [PyPI](https://pypi.org/project/netrun-llm/) | Multi-provider LLM orchestration with policies & telemetry |
+| **netrun-logging** | 2.0.0 | [PyPI](https://pypi.org/project/netrun-logging/) | Structured logging with Azure App Insights integration |
+| **netrun-oauth** | 2.0.0 | [PyPI](https://pypi.org/project/netrun-oauth/) | OAuth 2.0 adapters for 12+ providers |
 | **netrun-pytest-fixtures** | 2.0.0 | [PyPI](https://pypi.org/project/netrun-pytest-fixtures/) | Unified pytest fixtures - 71% duplication elimination |
 | **netrun-ratelimit** | 2.0.0 | [PyPI](https://pypi.org/project/netrun-ratelimit/) | Distributed rate limiting with token bucket & Redis |
-| **netrun-dogfood** | 2.0.0 | [PyPI](https://pypi.org/project/netrun-dogfood/) | Internal integration testing MCP server |
+| **netrun-rbac** | 2.0.0 | [PyPI](https://pypi.org/project/netrun-rbac/) | Role-based access control with tenant isolation testing |
+| **netrun-resilience** | 1.0.0 | [PyPI](https://pypi.org/project/netrun-resilience/) | Resilience patterns: retry, circuit breaker, timeout, bulkhead |
+| **netrun-validation** | 1.0.0 | [PyPI](https://pypi.org/project/netrun-validation/) | Pydantic validators for network, security, datetime, custom types |
+| **netrun-websocket** | 1.0.0 | [PyPI](https://pypi.org/project/netrun-websocket/) | Production WebSocket management with Redis sessions and JWT |
 
 ## Installation
 
@@ -32,13 +36,17 @@ pip install netrun-core
 # Individual packages
 pip install netrun-auth netrun-config netrun-logging netrun-llm
 
-# With optional dependencies
-pip install netrun-auth[all] netrun-llm[all]
+# New infrastructure packages
+pip install netrun-cache netrun-resilience netrun-validation netrun-websocket
 
-# Full suite
-pip install netrun-core netrun-auth netrun-config netrun-logging \
-    netrun-errors netrun-cors netrun-db-pool netrun-llm netrun-rbac \
-    netrun-oauth netrun-env netrun-pytest-fixtures netrun-ratelimit
+# With optional dependencies
+pip install netrun-auth[all] netrun-llm[all] netrun-cache[redis] netrun-websocket[all]
+
+# Full suite (18 packages)
+pip install netrun-core netrun-auth netrun-cache netrun-config netrun-cors \
+    netrun-db-pool netrun-dogfood netrun-env netrun-errors netrun-llm \
+    netrun-logging netrun-oauth netrun-pytest-fixtures netrun-ratelimit \
+    netrun-rbac netrun-resilience netrun-validation netrun-websocket
 ```
 
 ## Quick Start (v2.0.0 Namespace)
@@ -191,6 +199,64 @@ from netrun.rbac import TenantContext, require_tenant
 async def get_data(tenant_ctx: TenantContext):
     # Automatically scoped to current tenant
     return await db.query(tenant_id=tenant_ctx.tenant_id)
+```
+
+### netrun-cache
+
+Redis and in-memory caching with decorator support.
+
+```python
+from netrun.cache import CacheManager, cached
+
+cache = CacheManager()
+
+@cached(ttl=300, namespace="users")
+async def get_user(user_id: str):
+    return await db.fetch_user(user_id)
+```
+
+### netrun-resilience
+
+Resilience patterns for distributed systems.
+
+```python
+from netrun.resilience import retry, circuit_breaker, timeout
+
+@retry(max_attempts=3, backoff_factor=2.0)
+@circuit_breaker(failure_threshold=5)
+@timeout(seconds=10)
+async def call_external_api():
+    return await client.fetch_data()
+```
+
+### netrun-validation
+
+Comprehensive Pydantic validators for common patterns.
+
+```python
+from netrun.validation import validate_ip_address, validate_api_key_format
+from netrun.validation.custom_types import SafeEmail, StrongPassword
+
+class UserConfig(BaseModel):
+    email: SafeEmail
+    password: StrongPassword
+```
+
+### netrun-websocket
+
+Production WebSocket connection management.
+
+```python
+from netrun.websocket import WebSocketSessionManager
+
+manager = WebSocketSessionManager(redis_url="redis://localhost:6379")
+await manager.initialize()
+
+connection_id = await manager.create_connection(
+    websocket=ws,
+    user_id="user_123",
+    metadata={"room": "general"}
+)
 ```
 
 ## Migration from v1.x

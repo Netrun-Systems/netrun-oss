@@ -29,6 +29,17 @@ from netrun.llm.adapters.base import (
 from netrun.llm.adapters.claude import ClaudeAdapter
 from netrun.llm.adapters.openai import OpenAIAdapter
 from netrun.llm.adapters.ollama import OllamaAdapter
+
+# Optional adapters (require extra dependencies)
+try:
+    from netrun.llm.adapters.azure_openai import AzureOpenAIAdapter
+except ImportError:
+    AzureOpenAIAdapter = None
+
+try:
+    from netrun.llm.adapters.gemini import GeminiAdapter
+except ImportError:
+    GeminiAdapter = None
 from netrun.llm.chain import LLMFallbackChain
 from netrun.llm.cognition import ThreeTierCognition, CognitionTier
 from netrun.llm.config import LLMConfig
@@ -74,6 +85,8 @@ __all__ = [
     "ClaudeAdapter",
     "OpenAIAdapter",
     "OllamaAdapter",
+    "AzureOpenAIAdapter",  # v2.0: Multi-resource Azure OpenAI with failover
+    "GeminiAdapter",  # v2.0: Google Gemini with free tier quota tracking
     # Fallback chain
     "LLMFallbackChain",
     # Three-tier cognition

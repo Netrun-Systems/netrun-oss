@@ -1,0 +1,145 @@
+[build-system]
+requires = ["hatchling>=1.21.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "netrun-websocket"
+version = "1.0.0"
+description = "Production-grade WebSocket connection management for Netrun Systems services"
+readme = "README.md"
+license = {text = "MIT"}
+authors = [
+    {name = "Daniel Garza", email = "daniel@netrunsystems.com"}
+]
+maintainers = [
+    {name = "Netrun Systems", email = "engineering@netrunsystems.com"}
+]
+keywords = [
+    "websocket",
+    "connection-pool",
+    "session-management",
+    "redis",
+    "jwt",
+    "authentication",
+    "heartbeat",
+    "reconnection",
+    "fastapi",
+    "starlette",
+    "netrun",
+    "namespace"
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Framework :: FastAPI",
+    "Framework :: AsyncIO",
+    "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Typing :: Typed",
+]
+requires-python = ">=3.10"
+dependencies = [
+    "fastapi>=0.109.0",
+    "starlette>=0.27.0",
+    "pydantic>=2.0.0,<3.0.0",
+]
+
+[project.optional-dependencies]
+redis = [
+    "redis[asyncio]>=5.0.0,<6.0.0",
+]
+auth = [
+    "python-jose[cryptography]>=3.3.0",
+]
+all = [
+    "redis[asyncio]>=5.0.0,<6.0.0",
+    "python-jose[cryptography]>=3.3.0",
+]
+dev = [
+    "pytest>=8.0.0",
+    "pytest-asyncio>=0.23.0",
+    "pytest-cov>=4.1.0",
+    "black>=24.0.0",
+    "ruff>=0.3.0",
+    "mypy>=1.9.0",
+    "redis[asyncio]>=5.0.0,<6.0.0",
+    "python-jose[cryptography]>=3.3.0",
+]
+
+[project.urls]
+Homepage = "https://netrunsystems.com"
+Documentation = "https://github.com/netrunsystems/netrun-websocket"
+Repository = "https://github.com/netrunsystems/netrun-websocket"
+Issues = "https://github.com/netrunsystems/netrun-websocket/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/netrun"]
+
+[tool.hatch.build.targets.sdist]
+include = ["/src", "/tests", "README.md", "LICENSE"]
+
+[tool.pytest.ini_options]
+minversion = "8.0"
+testpaths = ["tests"]
+asyncio_mode = "auto"
+addopts = [
+    "--strict-markers",
+    "--strict-config",
+    "--cov=netrun.websocket",
+    "--cov-report=term-missing",
+    "--cov-report=html",
+    "--cov-report=xml",
+]
+
+[tool.coverage.run]
+source = ["src/netrun/websocket"]
+omit = ["tests/*", "*/tests/*"]
+
+[tool.coverage.report]
+precision = 2
+show_missing = true
+skip_covered = false
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+]
+
+[tool.black]
+line-length = 100
+target-version = ["py310", "py311", "py312"]
+include = '\.pyi?$'
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+
+[tool.ruff.lint]
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "B",  # flake8-bugbear
+    "C4", # flake8-comprehensions
+    "UP", # pyupgrade
+]
+ignore = [
+    "E501",  # line too long (handled by black)
+    "B008",  # do not perform function calls in argument defaults
+]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+ignore_missing_imports = true

@@ -361,3 +361,341 @@ class TestCognitionWithRAG:
 
         tiers = [r.tier for r in responses]
         assert CognitionTier.RAG not in tiers
+
+
+class TestCognitionEdgeCases:
+    """Test edge cases and error scenarios for cognition system."""
+
+    @pytest.mark.asyncio
+    async def test_execute_with_low_min_confidence(self):
+        """Test execute with very low minimum confidence threshold."""
+        mock_chain = MockChain()
+        cognition = ThreeTierCognition(
+            llm_chain=mock_chain,
+            enable_fast_ack=True,
+            enable_rag=False
+        )
+
+        response = await cognition.execute("Test", min_confidence=0.1)
+
+        # Should return deep response (highest confidence)
+        assert response.tier == CognitionTier.DEEP
+
+    @pytest.mark.asyncio
+    async def test_execute_with_no_valid_responses(self):
+        """Test execute when no responses meet confidence threshold."""
+        slow_chain = MockChain(delay=10.0)
+        cognition = ThreeTierCognition(
+            llm_chain=slow_chain,
+            enable_fast_ack=False,
+            enable_rag=False,
+            deep_timeout_ms=100  # Very short timeout
+        )
+
+        response = await cognition.execute("Test", min_confidence=0.9)
+
+        # Should return last response even if below threshold
+        assert response.tier == CognitionTier.DEEP
+        assert response.confidence < 0.9
+
+    @pytest.mark.asyncio
+    async def test_execute_sync_timeout(self):
+        """Test execute_sync raises timeout error."""
+        from netrun_llm.exceptions import CognitionTimeoutError
+        slow_chain = MockChain(delay=10.0)
+        cognition = ThreeTierCognition(
+            llm_chain=slow_chain,
+            deep_timeout_ms=100
+        )
+
+        with pytest.raises(CognitionTimeoutError) as exc_info:
+            await cognition.execute_sync("Test")
+
+        assert exc_info.value.tier_name == "DEEP"
+        assert exc_info.value.target_latency_ms == 100
+
+    @pytest.mark.asyncio
+    async def test_stream_response_fast_ack_timeout(self):
+        """Test stream response when fast ack times out."""
+        mock_chain = MockChain()
+
+        async def slow_fast_ack():
+            await asyncio.sleep(1.0)
+            return "Slow ack"
+
+        cognition = ThreeTierCognition(
+            llm_chain=mock_chain,
+            enable_fast_ack=True,
+            enable_rag=False,
+            fast_ack_timeout_ms=10  # Very short timeout
+        )
+
+        responses = []
+        async for response in cognition.stream_response("Test"):
+            responses.append(response)
+
+        # Fast ack should timeout, only deep response should be present
+        tiers = [r.tier for r in responses]
+        assert CognitionTier.DEEP in tiers
+
+    @pytest.mark.asyncio
+    async def test_stream_response_fast_ack_exception(self):
+        """Test stream response handles fast ack exceptions gracefully."""
+        mock_chain = MockChain()
+        cognition = ThreeTierCognition(
+            llm_chain=mock_chain,
+            enable_fast_ack=True,
+            enable_rag=False
+        )
+
+        # Patch _generate_fast_ack to raise exception
+        async def failing_fast_ack(prompt, context):
+            raise RuntimeError("Fast ack error")
+
+        cognition._generate_fast_ack = failing_fast_ack
+
+        responses = []
+        async for response in cognition.stream_response("Test"):
+            responses.append(response)
+
+        # Should still get deep response even if fast ack fails
+        tiers = [r.tier for r in responses]
+        assert CognitionTier.DEEP in tiers
+
+    @pytest.mark.asyncio
+    async def test_stream_response_deep_exception(self):
+        """Test stream response handles deep tier exceptions."""
+        class FailingChain:
+            async def execute_async(self, prompt, context=None):
+                raise RuntimeError("Deep tier failure")
+
+            def reset_metrics(self):
+                pass
+
+        cognition = ThreeTierCognition(
+            llm_chain=FailingChain(),
+            enable_fast_ack=False,
+            enable_rag=False
+        )
+
+        responses = []
+        async for response in cognition.stream_response("Test"):
+            responses.append(response)
+
+        # Should get error response from deep tier
+        assert len(responses) == 1
+        assert responses[0].tier == CognitionTier.DEEP
+        assert responses[0].confidence == 0.0
+        assert "error" in responses[0].metadata
+
+    def test_intent_detection_explain(self):
+        """Test intent detection for explain patterns."""
+        mock_chain = MockChain()
+        cognition = ThreeTierCognition(llm_chain=mock_chain)
+
+        assert cognition._detect_intent("Explain this concept") == "explain"
+        assert cognition._detect_intent("What is machine learning?") == "explain"
+        assert cognition._detect_intent("How does this work?") == "explain"
+        assert cognition._detect_intent("Why is the sky blue?") == "explain"
+
+    def test_intent_detection_help(self):
+        """Test intent detection for help patterns."""
+        mock_chain = MockChain()
+        cognition = ThreeTierCognition(llm_chain=mock_chain)
+
+        assert cognition._detect_intent("I need help") == "help"
+        assert cognition._detect_intent("Can you assist me?") == "help"
+        assert cognition._detect_intent("Please support this issue") == "help"
+
+    def test_custom_fast_ack_templates(self):
+        """Test initialization with custom fast ack templates."""
+        custom_templates = {
+            "greeting": "Custom greeting!",
+            "custom": "Custom intent response"
+        }
+        mock_chain = MockChain()
+        cognition = ThreeTierCognition(
+            llm_chain=mock_chain,
+            fast_ack_templates=custom_templates
+        )
+
+        assert cognition.fast_ack_templates["greeting"] == "Custom greeting!"
+        assert "custom" in cognition.fast_ack_templates
+
+    @pytest.mark.asyncio
+    async def test_rag_with_no_documents_returned(self):
+        """Test RAG tier when retrieval returns no documents."""
+        mock_chain = MockChain()
+
+        async def empty_retrieval(query: str) -> List[str]:
+            return []  # No documents found
+
+        class MockRAGAdapter(BaseLLMAdapter):
+            def __init__(self):
+                super().__init__("MockRAG", AdapterTier.LOCAL)
+
+            def execute(self, prompt, context=None):
+                return LLMResponse(
+                    status="success",
+                    content="RAG response",
+                    latency_ms=500,
+                    adapter_name="MockRAG",
+                )
+
+            async def execute_async(self, prompt, context=None):
+                return self.execute(prompt, context)
+
+            def estimate_cost(self, prompt, context=None):
+                return 0.0
+
+            def check_availability(self):
+                return True
+
+            def get_metadata(self):
+                return {}
+
+        cognition = ThreeTierCognition(
+            llm_chain=mock_chain,
+            enable_fast_ack=False,
+            enable_rag=True,
+            rag_retrieval=empty_retrieval,
+            rag_adapter=MockRAGAdapter()
+        )
+
+        responses = []
+        async for response in cognition.stream_response("Test"):
+            responses.append(response)
+
+        # RAG should be skipped when no documents found
+        tiers = [r.tier for r in responses]
+        assert CognitionTier.RAG not in tiers
+
+    @pytest.mark.asyncio
+    async def test_rag_timeout(self):
+        """Test RAG tier timeout handling."""
+        mock_chain = MockChain()
+
+        async def slow_retrieval(query: str) -> List[str]:
+            await asyncio.sleep(10.0)  # Very slow retrieval
+            return ["Document 1"]
+
+        cognition = ThreeTierCognition(
+            llm_chain=mock_chain,
+            enable_fast_ack=False,
+            enable_rag=True,
+            rag_retrieval=slow_retrieval,
+            rag_timeout_ms=100  # Short timeout
+        )
+
+        responses = []
+        async for response in cognition.stream_response("Test"):
+            responses.append(response)
+
+        # RAG should timeout, only deep response
+        tiers = [r.tier for r in responses]
+        assert CognitionTier.RAG not in tiers
+        assert CognitionTier.DEEP in tiers
+
+    def test_cognition_repr(self):
+        """Test cognition system string representation."""
+        mock_chain = MockChain()
+        cognition = ThreeTierCognition(
+            llm_chain=mock_chain,
+            enable_fast_ack=True,
+            enable_rag=False,
+            fast_ack_timeout_ms=100,
+            rag_timeout_ms=2000,
+            deep_timeout_ms=5000
+        )
+
+        repr_str = repr(cognition)
+
+        assert "ThreeTierCognition" in repr_str
+        assert "fast_ack=True" in repr_str
+        assert "rag=False" in repr_str
+        assert "100" in repr_str
+        assert "2000" in repr_str
+        assert "5000" in repr_str
+
+    def test_get_metrics_tier_distribution(self):
+        """Test get_metrics returns tier distribution percentages."""
+        mock_chain = MockChain()
+        cognition = ThreeTierCognition(llm_chain=mock_chain)
+
+        # Simulate some requests
+        cognition.metrics.total_requests = 10
+        cognition.metrics.fast_ack_count = 10
+        cognition.metrics.rag_count = 5
+        cognition.metrics.deep_count = 10
+
+        metrics = cognition.get_metrics()
+
+        assert "tier_distribution" in metrics
+        assert metrics["tier_distribution"]["fast_ack"] == 100.0
+        assert metrics["tier_distribution"]["rag"] == 50.0
+        assert metrics["tier_distribution"]["deep"] == 100.0
+
+    def test_get_metrics_includes_timeouts(self):
+        """Test get_metrics includes timeout configuration."""
+        mock_chain = MockChain()
+        cognition = ThreeTierCognition(
+            llm_chain=mock_chain,
+            fast_ack_timeout_ms=200,
+            rag_timeout_ms=3000,
+            deep_timeout_ms=6000
+        )
+
+        metrics = cognition.get_metrics()
+
+        assert metrics["timeouts"]["fast_ack_ms"] == 200
+        assert metrics["timeouts"]["rag_ms"] == 3000
+        assert metrics["timeouts"]["deep_ms"] == 6000
+
+    def test_get_metrics_includes_enabled_tiers(self):
+        """Test get_metrics shows which tiers are enabled."""
+        mock_chain = MockChain()
+        cognition = ThreeTierCognition(
+            llm_chain=mock_chain,
+            enable_fast_ack=False,
+            enable_rag=True
+        )
+
+        metrics = cognition.get_metrics()
+
+        assert metrics["enabled_tiers"]["fast_ack"] is False
+        assert metrics["enabled_tiers"]["rag"] is True
+
+
+class TestTierResponseProperties:
+    """Test TierResponse properties and methods."""
+
+    def test_tier_response_metadata_defaults_to_empty_dict(self):
+        """Test TierResponse metadata defaults to empty dict."""
+        response = TierResponse(
+            tier=CognitionTier.DEEP,
+            content="Test",
+            latency_ms=100
+        )
+
+        assert response.metadata == {}
+        assert isinstance(response.metadata, dict)
+
+    def test_tier_response_is_final_defaults_to_false(self):
+        """Test TierResponse is_final defaults to False."""
+        response = TierResponse(
+            tier=CognitionTier.FAST_ACK,
+            content="Test",
+            latency_ms=50
+        )
+
+        assert response.is_final is False
+
+    def test_tier_response_confidence_defaults_to_one(self):
+        """Test TierResponse confidence defaults to 1.0."""
+        response = TierResponse(
+            tier=CognitionTier.DEEP,
+            content="Test",
+            latency_ms=1000
+        )
+
+        assert response.confidence == 1.0

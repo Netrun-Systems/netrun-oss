@@ -52,12 +52,21 @@ anthropic = [
 openai = [
     "openai>=1.0.0",
 ]
+azure = [
+    "openai>=1.0.0",
+    "azure-identity>=1.16.0",
+]
+gemini = [
+    "google-generativeai>=0.8.3",
+]
 logging = [
     "netrun-logging>=2.0.0",
 ]
 all = [
     "anthropic>=0.25.0",
     "openai>=1.0.0",
+    "azure-identity>=1.16.0",
+    "google-generativeai>=0.8.3",
     "netrun-logging>=2.0.0",
 ]
 dev = [

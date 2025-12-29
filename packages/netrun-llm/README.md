@@ -21,8 +21,10 @@ Multi-provider LLM orchestration with automatic fallback chains and three-tier c
 ## Features
 
 - **Multi-Adapter Fallback Chains**: Automatic failover between LLM providers (Claude -> GPT-4 -> Llama3)
+- **Azure OpenAI Integration (v2.0+)**: Multi-resource failover with cloud credit utilization
+- **Google Gemini Integration (v2.0+)**: Free tier support with daily quota tracking (1,500 req/day)
 - **Three-Tier Cognition**: Fast ack (<100ms), RAG response (<2s), Deep insight (<5s)
-- **Circuit Breaker Protection**: Per-adapter circuit breakers prevent cascade failures
+- **Circuit Breaker Protection**: Per-adapter circuit breakers prevent cascade failures (enhanced from Charlotte)
 - **Cost Tracking**: Automatic cost estimation and tracking across all providers
 - **Async-First**: Full async support with sync wrappers for compatibility
 - **Project-Agnostic**: No Wilbur-specific dependencies, works in any Python project
@@ -38,6 +40,12 @@ pip install netrun-llm[anthropic]
 
 # With OpenAI support
 pip install netrun-llm[openai]
+
+# With Azure OpenAI support (v2.0+)
+pip install netrun-llm[azure]
+
+# With Google Gemini support (v2.0+)
+pip install netrun-llm[gemini]
 
 # Full installation (all providers)
 pip install netrun-llm[all]
@@ -226,6 +234,102 @@ print(f"Available: {models}")
 - phi-3
 - gemma2
 - qwen2
+
+### AzureOpenAIAdapter (v2.0+)
+
+Multi-resource Azure OpenAI integration with automatic failover and cloud credit utilization.
+
+```python
+from netrun.llm import AzureOpenAIAdapter
+
+# Initialize with default Netrun resources (requires Azure CLI auth)
+adapter = AzureOpenAIAdapter(preferred_model="gpt-4o")
+
+# Check availability
+if adapter.check_availability():
+    response = adapter.execute("Explain microservices")
+    print(response.content)
+    print(f"Cost: ${response.cost_usd}")  # $0.00 (cloud credits)
+    print(f"Effective savings: ${response.metadata['effective_cost_saved']:.4f}")
+```
+
+**Prerequisites:**
+```bash
+# Authenticate with Azure CLI
+az login
+az account show
+```
+
+**Features:**
+- Multi-resource failover (primary → secondary → tertiary)
+- Cloud credit utilization (effectively free)
+- Azure CLI authentication via DefaultAzureCredential
+- Per-resource health tracking
+- Effective cost tracking (ROI calculation)
+
+**Supported Models:**
+- gpt-4o, gpt-4.1 (recommended)
+- gpt-4-turbo
+- o3-mini (experimental)
+
+**Custom Resources:**
+```python
+from netrun.llm import AzureOpenAIAdapter
+from netrun.llm.adapters.azure_openai import AzureResource
+
+custom_resources = [
+    AzureResource(
+        name="my-primary",
+        endpoint="https://my-primary.openai.azure.com",
+        resource_group="my-rg",
+        models=["gpt-4o"],
+        priority=1  # Highest priority
+    )
+]
+
+adapter = AzureOpenAIAdapter(resources=custom_resources)
+```
+
+### GeminiAdapter (v2.0+)
+
+Google Gemini integration with free tier quota tracking (1,500 requests/day).
+
+```python
+from netrun.llm import GeminiAdapter
+
+# Initialize with free tier
+adapter = GeminiAdapter(
+    api_key="your-google-ai-api-key",
+    use_free_tier=True
+)
+
+response = adapter.execute("Write a haiku about AI")
+print(response.content)
+print(f"Quota remaining: {response.metadata['quota_remaining']}")
+
+# Check quota status
+status = adapter.get_quota_status()
+print(f"Used: {status['requests_today']}/{status['daily_limit']}")
+```
+
+**Features:**
+- Free tier with daily quota tracking (1,500 req/day)
+- Paid tier for unlimited usage
+- Automatic quota management
+- Circuit breaker protection
+- Cost tracking ($0.00 for free tier)
+
+**Supported Models:**
+- gemini-1.5-flash (recommended, fast/cheap)
+- gemini-1.5-pro (best quality)
+- gemini-2.0-flash-exp (experimental, free)
+
+**Environment Variables:**
+```bash
+export GEMINI_API_KEY="your-google-ai-api-key"
+export GEMINI_DEFAULT_MODEL="gemini-1.5-flash"
+export GEMINI_USE_FREE_TIER="true"
+```
 
 ## Fallback Chain
 
@@ -537,6 +641,12 @@ See `examples/policy_enforcement_example.py` for comprehensive examples.
 
 | Provider | Model | Input (per 1M tokens) | Output (per 1M tokens) | Cost Tier |
 |----------|-------|----------------------|------------------------|-----------|
+| Azure OpenAI (v2.0+) | gpt-4o, gpt-4.1 | $0.00* | $0.00* | FREE* |
+| Azure OpenAI (v2.0+) | o3-mini | $0.00* | $0.00* | FREE* |
+| Gemini (v2.0+) | 1.5-flash (free tier) | $0.00 | $0.00 | FREE |
+| Gemini (v2.0+) | 1.5-pro (free tier) | $0.00 | $0.00 | FREE |
+| Gemini (v2.0+) | 1.5-flash (paid) | $0.075 | $0.30 | LOW |
+| Gemini (v2.0+) | 1.5-pro (paid) | $1.25 | $5.00 | MEDIUM |
 | Claude | Sonnet 4.5/3.5 | $3.00 | $15.00 | MEDIUM |
 | Claude | Opus 3/4.5 | $15.00 | $75.00 | HIGH |
 | Claude | Haiku 3/3.5 | $0.25-$0.80 | $1.25-$4.00 | LOW |
@@ -546,6 +656,8 @@ See `examples/policy_enforcement_example.py` for comprehensive examples.
 | OpenAI | GPT-3.5 Turbo | $0.50 | $1.50 | LOW |
 | OpenAI | O1 Preview | $15.00 | $60.00 | PREMIUM |
 | Ollama | All models | $0.00 | $0.00 | FREE |
+
+*Azure OpenAI is free when using cloud credits (until exhausted)
 
 ## License
 
