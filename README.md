@@ -22,7 +22,7 @@ Open source Python libraries from [Netrun Systems](https://netrunsystems.com) - 
 | **netrun-oauth** | 2.0.0 | [PyPI](https://pypi.org/project/netrun-oauth/) | OAuth 2.0 adapters for 12+ providers |
 | **netrun-pytest-fixtures** | 2.0.0 | [PyPI](https://pypi.org/project/netrun-pytest-fixtures/) | Unified pytest fixtures - 71% duplication elimination |
 | **netrun-ratelimit** | 2.0.0 | [PyPI](https://pypi.org/project/netrun-ratelimit/) | Distributed rate limiting with token bucket & Redis |
-| **netrun-rbac** | 2.0.0 | [PyPI](https://pypi.org/project/netrun-rbac/) | Role-based access control with tenant isolation testing |
+| **netrun-rbac** | 3.0.0 | [PyPI](https://pypi.org/project/netrun-rbac/) | Multi-tenant RBAC with hierarchical teams, resource sharing, and isolation testing |
 | **netrun-resilience** | 1.0.0 | [PyPI](https://pypi.org/project/netrun-resilience/) | Resilience patterns: retry, circuit breaker, timeout, bulkhead |
 | **netrun-validation** | 1.0.0 | [PyPI](https://pypi.org/project/netrun-validation/) | Pydantic validators for network, security, datetime, custom types |
 | **netrun-websocket** | 1.0.0 | [PyPI](https://pypi.org/project/netrun-websocket/) | Production WebSocket management with Redis sessions and JWT |
@@ -111,19 +111,26 @@ print(f"Total cost: ${report['total_cost_usd']:.4f}")
 print(f"P95 latency: {report['latency_p95_ms']}ms")
 ```
 
-### Tenant Isolation Testing (netrun-rbac)
-Comprehensive test suite for multi-tenant security:
+### Tenant Isolation Testing (netrun-rbac v3.0.0)
+Comprehensive test suite for multi-tenant security - prove isolation works for SOC2/ISO27001 compliance:
 
 ```python
-from netrun.rbac import TenantIsolationTestSuite
+from netrun.rbac import TenantTestContext, TenantEscapePathScanner, ci_fail_on_findings
 
-suite = TenantIsolationTestSuite(
-    get_tenant_context=lambda: current_tenant,
-    execute_query=lambda q: db.execute(q),
-)
+# Contract test: Tenant B MUST NOT see Tenant A's data
+async with TenantTestContext(db_session) as ctx:
+    secret = Item(name="Secret", tenant_id=ctx.tenant_a_id)
+    session.add(secret)
+    await session.commit()
 
-results = suite.run_all_tests()
-# Tests: cross-tenant queries, context corruption, background task isolation
+    await ctx.switch_to_tenant_b()
+    result = await session.execute(select(Item))
+    assert len(result.scalars().all()) == 0  # Cross-tenant access impossible
+
+# CI/CD escape path scanner - finds SQL without tenant filters
+scanner = TenantEscapePathScanner()
+findings = scanner.scan_directory("./src")
+sys.exit(ci_fail_on_findings(findings))  # Fails build on critical findings
 ```
 
 ### Soft-Dependency Detection
@@ -188,18 +195,51 @@ if rbac.check_permission(user_id, resource, action):
     # proceed
 ```
 
-### netrun-rbac
+### netrun-rbac (v3.0.0)
 
-Role-based access control with tenant isolation.
+Multi-tenant RBAC with hierarchical teams, resource sharing, and tenant isolation testing.
 
 ```python
-from netrun.rbac import TenantContext, require_tenant
+from netrun.rbac import (
+    # One-line middleware setup
+    setup_tenancy_middleware, TenancyConfig, IsolationMode,
+    # Tenant isolation testing
+    TenantTestContext, TenantEscapePathScanner, ci_fail_on_findings,
+)
 
-@require_tenant
-async def get_data(tenant_ctx: TenantContext):
-    # Automatically scoped to current tenant
-    return await db.query(tenant_id=tenant_ctx.tenant_id)
+# One-line middleware setup
+app = FastAPI()
+setup_tenancy_middleware(
+    app,
+    config=TenancyConfig(isolation_mode=IsolationMode.HYBRID),
+    get_session=get_db_session
+)
+
+# Contract test: Prove tenant isolation works
+async with TenantTestContext(db_session) as ctx:
+    secret = Item(name="Secret", tenant_id=ctx.tenant_a_id)
+    session.add(secret)
+    await session.commit()
+
+    await ctx.switch_to_tenant_b()
+    result = await session.execute(select(Item))
+    assert len(result.scalars().all()) == 0  # Cross-tenant access impossible
+
+# CI/CD escape path scanner
+scanner = TenantEscapePathScanner()
+findings = scanner.scan_directory("./src")
+sys.exit(ci_fail_on_findings(findings))  # Fails build on critical findings
 ```
+
+**v3.0.0 Features:**
+- Hierarchical teams with sub-team support
+- Resource-level sharing (user/team/tenant/external)
+- `TenantQueryService` for auto-filtered CRUD
+- Hybrid isolation (PostgreSQL RLS + application-level)
+- Contract testing with `TenantTestContext`
+- CI/CD escape path scanner
+- Background task context preservation
+- SOC2/ISO27001/NIST compliance documentation
 
 ### netrun-cache
 
@@ -295,8 +335,16 @@ Netrun Systems was founded in May 2025 by Daniel Garza, building on 25 years of 
 
 ## Acknowledgments
 
-Special thanks to the r/Python and r/FastAPI communities for feedback that shaped v2.0.0:
+Special thanks to the r/Python and r/FastAPI communities for feedback that shaped our releases:
+
+**v2.1 / v3.0.0** (December 2025):
+- Tenant isolation contract testing with `TenantTestContext`
+- CI/CD escape path scanner for compliance
+- Hierarchical teams and resource sharing
+- 4 new infrastructure packages (cache, resilience, validation, websocket)
+- Azure OpenAI and Gemini adapters for netrun-llm
+
+**v2.0.0** (December 2025):
 - Soft-dependency detection improvements
-- Tenant isolation testing suite
 - LLM per-provider policy enforcement
 - LLM cost/latency telemetry

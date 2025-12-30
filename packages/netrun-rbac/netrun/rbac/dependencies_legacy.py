@@ -18,7 +18,7 @@ from typing import Callable, List
 from fastapi import Depends, HTTPException
 
 from .exceptions import InsufficientPermissionsError, ResourceOwnershipError
-from .models import RoleHierarchy
+from .models_legacy import RoleHierarchy
 
 logger = logging.getLogger(__name__)
 
