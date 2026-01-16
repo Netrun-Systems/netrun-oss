@@ -1,0 +1,60 @@
+{
+  "name": "@netrun/touch-ui",
+  "version": "1.0.0",
+  "description": "Touch-first UI component library implementing Modern Touch UI Standards for Netrun Systems applications",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./styles": "./dist/touch-standards.css"
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm,cjs --dts --external react",
+    "dev": "tsup src/index.ts --format esm,cjs --dts --external react --watch",
+    "lint": "eslint src/",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf dist"
+  },
+  "peerDependencies": {
+    "react": "^18.0.0 || ^19.0.0",
+    "react-dom": "^18.0.0 || ^19.0.0",
+    "framer-motion": "^10.0.0 || ^11.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "eslint": "^8.57.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.3.0"
+  },
+  "keywords": [
+    "react",
+    "touch-ui",
+    "mobile",
+    "netrun",
+    "components",
+    "framer-motion",
+    "glassmorphism",
+    "bento-grid"
+  ],
+  "author": "Netrun Systems",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Netrun-Systems/netrun-oss",
+    "directory": "packages/netrun-touch-ui"
+  },
+  "homepage": "https://github.com/Netrun-Systems/netrun-oss/tree/main/packages/netrun-touch-ui#readme",
+  "bugs": {
+    "url": "https://github.com/Netrun-Systems/netrun-oss/issues"
+  }
+}

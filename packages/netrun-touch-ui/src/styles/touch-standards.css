@@ -1,0 +1,290 @@
+/**
+ * Netrun Touch UI Standards CSS
+ *
+ * Modern Touch UI Standards implementation
+ * - 48dp minimum touch targets (Material Design 3)
+ * - Safe area insets for notched devices
+ * - Glassmorphism with performance fallbacks
+ * - Bento Grid layout system
+ *
+ * @version 1.0.0
+ */
+
+/* ============================================
+   Safe Area Inset Variables
+   ============================================ */
+:root {
+  /* Safe area insets with fallbacks */
+  --safe-area-top: env(safe-area-inset-top, 0px);
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-area-left: env(safe-area-inset-left, 0px);
+  --safe-area-right: env(safe-area-inset-right, 0px);
+
+  /* Touch target standards (Material Design 3) */
+  --touch-target-min: 48px;
+  --touch-target-comfortable: 56px;
+  --touch-target-large: 64px;
+  --touch-spacing-min: 8px;
+
+  /* Navigation standards */
+  --nav-height-mobile: 60px;
+  --nav-height-tablet: 72px;
+  --bottom-sheet-handle-height: 24px;
+
+  /* Glassmorphism tokens */
+  --glass-blur: 12px;
+  --glass-saturation: 180%;
+  --glass-bg-light: rgba(255, 255, 255, 0.6);
+  --glass-bg-dark: rgba(0, 0, 0, 0.4);
+  --glass-bg-fallback-light: rgba(255, 255, 255, 0.9);
+  --glass-bg-fallback-dark: rgba(0, 0, 0, 0.8);
+  --glass-border: rgba(255, 255, 255, 0.2);
+  --glass-shadow: 0 8px 32px rgba(31, 38, 135, 0.15);
+
+  /* Animation tokens */
+  --spring-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --transition-fast: 150ms ease-out;
+  --transition-normal: 200ms ease-out;
+  --transition-slow: 300ms ease-out;
+}
+
+/* ============================================
+   Safe Area Utility Classes
+   ============================================ */
+.pt-safe { padding-top: var(--safe-area-top); }
+.pb-safe { padding-bottom: var(--safe-area-bottom); }
+.pl-safe { padding-left: var(--safe-area-left); }
+.pr-safe { padding-right: var(--safe-area-right); }
+.p-safe {
+  padding: var(--safe-area-top) var(--safe-area-right) var(--safe-area-bottom) var(--safe-area-left);
+}
+
+.mt-safe { margin-top: var(--safe-area-top); }
+.mb-safe { margin-bottom: var(--safe-area-bottom); }
+.ml-safe { margin-left: var(--safe-area-left); }
+.mr-safe { margin-right: var(--safe-area-right); }
+
+/* ============================================
+   Touch Target Utility Classes
+   ============================================ */
+.touch-target {
+  min-width: var(--touch-target-min);
+  min-height: var(--touch-target-min);
+}
+
+.touch-target-comfortable {
+  min-width: var(--touch-target-comfortable);
+  min-height: var(--touch-target-comfortable);
+}
+
+.touch-target-large {
+  min-width: var(--touch-target-large);
+  min-height: var(--touch-target-large);
+}
+
+/* Phantom padding for small visual elements with large touch targets */
+.touch-phantom {
+  position: relative;
+}
+
+.touch-phantom::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  min-width: var(--touch-target-min);
+  min-height: var(--touch-target-min);
+}
+
+/* ============================================
+   Glassmorphism Utility Classes
+   ============================================ */
+
+/* Light glass panel with fallback */
+.glass-panel {
+  background: var(--glass-bg-fallback-light);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+@supports (backdrop-filter: blur(12px)) {
+  .glass-panel {
+    background: var(--glass-bg-light);
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation));
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation));
+  }
+}
+
+/* Dark glass panel with fallback */
+.glass-panel-dark {
+  background: var(--glass-bg-fallback-dark);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: var(--glass-shadow);
+}
+
+@supports (backdrop-filter: blur(12px)) {
+  .glass-panel-dark {
+    background: var(--glass-bg-dark);
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation));
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation));
+  }
+}
+
+/* Glass card variant */
+.glass-card {
+  background: var(--glass-bg-fallback-light);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+  border-radius: 16px;
+}
+
+@supports (backdrop-filter: blur(12px)) {
+  .glass-card {
+    background: var(--glass-bg-light);
+    backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation));
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-saturation));
+  }
+}
+
+/* ============================================
+   Bento Grid Layout System
+   ============================================ */
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  grid-auto-rows: 150px;
+  gap: 16px;
+  padding: var(--safe-area-top) var(--safe-area-right) var(--safe-area-bottom) var(--safe-area-left);
+}
+
+/* Mobile: Single column stack */
+@media (max-width: 639px) {
+  .bento-grid {
+    grid-template-columns: 1fr;
+    grid-auto-rows: auto;
+  }
+}
+
+/* Tablet portrait: 2 columns */
+@media (min-width: 640px) and (max-width: 1023px) {
+  .bento-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Tablet landscape & desktop: 3-4 columns */
+@media (min-width: 1024px) {
+  .bento-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Bento item span utilities */
+.bento-span-1 { grid-column: span 1; grid-row: span 1; }
+.bento-span-2 { grid-column: span 2; grid-row: span 1; }
+.bento-span-2x2 { grid-column: span 2; grid-row: span 2; }
+.bento-span-row { grid-column: 1 / -1; grid-row: span 1; }
+.bento-tall { grid-column: span 1; grid-row: span 2; }
+
+/* ============================================
+   Bottom Navigation Base Styles
+   ============================================ */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  height: calc(var(--nav-height-mobile) + var(--safe-area-bottom));
+  padding-bottom: var(--safe-area-bottom);
+}
+
+/* Hide bottom nav on desktop */
+@media (min-width: 1024px) {
+  .bottom-nav {
+    display: none;
+  }
+}
+
+/* ============================================
+   Bottom Sheet Base Styles
+   ============================================ */
+.bottom-sheet-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.bottom-sheet {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 50;
+  max-height: 90vh;
+  border-radius: 24px 24px 0 0;
+  padding-bottom: var(--safe-area-bottom);
+}
+
+.bottom-sheet-handle {
+  width: 36px;
+  height: 4px;
+  background: rgba(128, 128, 128, 0.4);
+  border-radius: 2px;
+  margin: 8px auto 16px;
+}
+
+/* ============================================
+   Reduced Motion Support
+   ============================================ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+
+  .glass-panel,
+  .glass-panel-dark,
+  .glass-card {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+}
+
+/* ============================================
+   Touch Active States
+   ============================================ */
+.touch-active {
+  transition: transform var(--transition-fast), opacity var(--transition-fast);
+}
+
+.touch-active:active {
+  transform: scale(0.97);
+  opacity: 0.9;
+}
+
+/* Disable touch feedback when dragging */
+.touch-active[data-dragging="true"]:active {
+  transform: none;
+  opacity: 1;
+}
+
+/* ============================================
+   Focus Styles for Accessibility
+   ============================================ */
+.touch-focus:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+/* Remove focus ring on touch devices */
+@media (hover: none) and (pointer: coarse) {
+  .touch-focus:focus-visible {
+    outline: none;
+  }
+}
