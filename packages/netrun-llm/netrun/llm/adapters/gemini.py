@@ -40,7 +40,7 @@ from .base import BaseLLMAdapter, AdapterTier, LLMResponse
 PRICING = {
     "gemini-1.5-pro": {"input": 1.25, "output": 5.00},
     "gemini-1.5-flash": {"input": 0.075, "output": 0.30},
-    "gemini-2.0-flash-exp": {"input": 0.00, "output": 0.00},  # Experimental (free)
+    "gemini-2.5-flash": {"input": 0.15, "output": 0.60},
 }
 
 # Default model if not specified
@@ -63,7 +63,7 @@ class GeminiAdapter(BaseLLMAdapter):
         - Free tier support (1,500 req/day quota tracking)
         - Circuit breaker protection
         - Cost estimation and tracking
-        - Support for gemini-1.5-pro, gemini-1.5-flash, gemini-2.0-flash-exp
+        - Support for gemini-1.5-pro, gemini-1.5-flash, gemini-2.5-flash
 
     Environment Variables:
         GEMINI_API_KEY: Google AI API key
