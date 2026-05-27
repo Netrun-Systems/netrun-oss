@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "netrun-core"
-version = "1.0.0"
+version = "2.0.0"
 description = "Netrun Systems namespace package foundation - provides the unified 'netrun' namespace for all Netrun packages"
 readme = "README.md"
 license = {text = "MIT"}

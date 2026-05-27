@@ -131,7 +131,7 @@ def mock_keyvault():
 
     Simulates Azure SDK being unavailable for testing fallback behavior.
     """
-    with patch("netrun_config.keyvault.AZURE_AVAILABLE", False):
+    with patch("netrun.config.keyvault.AZURE_AVAILABLE", False):
         yield
 
 

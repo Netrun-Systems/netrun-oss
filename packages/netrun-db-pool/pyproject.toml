@@ -97,6 +97,11 @@ addopts = [
     "--cov-report=html",
     "--cov-report=xml",
 ]
+markers = [
+    "integration: Integration tests requiring external services (e.g., database)",
+    "unit: Unit tests with no external dependencies",
+    "slow: Tests that take significant time to run",
+]
 
 [tool.coverage.run]
 source = ["netrun/db"]

@@ -113,7 +113,7 @@ class TestAzureADClient:
         assert azure_client._msal_app is None
 
         # Mock MSAL to avoid network calls
-        with patch('netrun_auth.integrations.azure_ad.ConfidentialClientApplication') as mock_msal:
+        with patch('netrun.auth.integrations.azure_ad.ConfidentialClientApplication') as mock_msal:
             mock_app = MagicMock()
             mock_msal.return_value = mock_app
 
@@ -127,8 +127,8 @@ class TestAzureADClient:
         from msal import ConfidentialClientApplication, PublicClientApplication
 
         # Mock both MSAL client types
-        with patch('netrun_auth.integrations.azure_ad.ConfidentialClientApplication') as mock_conf:
-            with patch('netrun_auth.integrations.azure_ad.PublicClientApplication') as mock_pub:
+        with patch('netrun.auth.integrations.azure_ad.ConfidentialClientApplication') as mock_conf:
+            with patch('netrun.auth.integrations.azure_ad.PublicClientApplication') as mock_pub:
                 mock_conf_app = MagicMock(spec=ConfidentialClientApplication)
                 mock_pub_app = MagicMock(spec=PublicClientApplication)
                 mock_conf.return_value = mock_conf_app
@@ -359,7 +359,7 @@ class TestAzureTokenValidation:
             mock_key.key = "mock-public-key"
             mock_jwks.return_value = mock_key
 
-            with patch('netrun_auth.integrations.azure_ad.jwt.decode', return_value=claims):
+            with patch('netrun.auth.integrations.azure_ad.jwt.decode', return_value=claims):
                 result = await azure_client.validate_azure_token("mock-token")
 
                 assert result["oid"] == "azure-user-123"
@@ -375,7 +375,7 @@ class TestAzureTokenValidation:
         mock_jwks.get_signing_key_from_jwt.return_value = mock_key
         azure_client._jwks_client = mock_jwks
 
-        with patch('netrun_auth.integrations.azure_ad.jwt.decode', side_effect=pyjwt.ExpiredSignatureError):
+        with patch('netrun.auth.integrations.azure_ad.jwt.decode', side_effect=pyjwt.ExpiredSignatureError):
             with pytest.raises(TokenValidationError, match="expired"):
                 await azure_client.validate_azure_token("expired-token")
 
@@ -389,7 +389,7 @@ class TestAzureTokenValidation:
         mock_jwks.get_signing_key_from_jwt.return_value = mock_key
         azure_client._jwks_client = mock_jwks
 
-        with patch('netrun_auth.integrations.azure_ad.jwt.decode', side_effect=pyjwt.InvalidAudienceError):
+        with patch('netrun.auth.integrations.azure_ad.jwt.decode', side_effect=pyjwt.InvalidAudienceError):
             with pytest.raises(TokenValidationError, match="audience"):
                 await azure_client.validate_azure_token("token")
 
@@ -410,7 +410,7 @@ class TestAzureTokenValidation:
         mock_jwks.get_signing_key_from_jwt.return_value = mock_key
         azure_client._jwks_client = mock_jwks
 
-        with patch('netrun_auth.integrations.azure_ad.jwt.decode', return_value=claims):
+        with patch('netrun.auth.integrations.azure_ad.jwt.decode', return_value=claims):
             with pytest.raises(TokenValidationError, match="not allowed"):
                 await azure_client.validate_azure_token(
                     "token",
@@ -434,7 +434,7 @@ class TestAzureTokenValidation:
         mock_jwks.get_signing_key_from_jwt.return_value = mock_key
         azure_client._jwks_client = mock_jwks
 
-        with patch('netrun_auth.integrations.azure_ad.jwt.decode', return_value=claims):
+        with patch('netrun.auth.integrations.azure_ad.jwt.decode', return_value=claims):
             with pytest.raises(TokenValidationError, match="identity claims"):
                 await azure_client.validate_azure_token("token")
 

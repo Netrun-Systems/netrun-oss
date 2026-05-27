@@ -1,0 +1,99 @@
+name: Test Suite
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10", "3.11", "3.12"]
+        package:
+          - netrun-core
+          - netrun-resilience
+          - netrun-validation
+          - netrun-errors
+          - netrun-env
+          - netrun-config
+          - netrun-cors
+          - netrun-llm
+          - netrun-logging
+          - netrun-oauth
+          - netrun-auth
+          - netrun-cache
+          - netrun-ratelimit
+          - netrun-rbac
+          - netrun-db-pool
+          - netrun-pytest-fixtures
+          - netrun-websocket
+          - netrun-dogfood
+
+    name: "${{ matrix.package }} / Python ${{ matrix.python-version }}"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Cache pip packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ matrix.package }}-${{ hashFiles(format('packages/{0}/pyproject.toml', matrix.package)) }}
+          restore-keys: |
+            ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ matrix.package }}-
+            ${{ runner.os }}-pip-${{ matrix.python-version }}-
+
+      - name: Install build tools
+        run: pip install --upgrade pip wheel hatchling
+
+      - name: Install netrun-core (namespace dependency)
+        run: pip install -e packages/netrun-core/
+
+      - name: Install package with dev extras
+        working-directory: packages/${{ matrix.package }}
+        run: |
+          # Install testing extras if available
+          if python -c "import tomllib; d=tomllib.load(open('pyproject.toml','rb')); exit(0 if 'dev' in d.get('project',{}).get('optional-dependencies',{}) else 1)" 2>/dev/null; then
+            pip install -e ".[dev]"
+          else
+            pip install -e .
+          fi
+          # Install aiosqlite for db-pool testing
+          if [ "${{ matrix.package }}" = "netrun-db-pool" ]; then
+            pip install aiosqlite
+          fi
+
+      - name: Run tests
+        working-directory: packages/${{ matrix.package }}
+        run: |
+          # Check if tests directory exists and has test files
+          if [ -d "tests" ] && find tests -name "test_*.py" | grep -q .; then
+            python -m pytest tests/ \
+              --no-header \
+              -q \
+              --no-cov \
+              --tb=short \
+              -x
+          else
+            echo "No tests found in ${{ matrix.package }}, skipping."
+          fi
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-${{ matrix.package }}-py${{ matrix.python-version }}
+          path: |
+            packages/${{ matrix.package }}/htmlcov/
+            packages/${{ matrix.package }}/coverage.xml
+          if-no-files-found: ignore

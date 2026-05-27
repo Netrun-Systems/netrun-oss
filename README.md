@@ -1,6 +1,6 @@
 # Netrun Open Source Libraries
 
-Open source Python libraries from [Netrun Systems](https://netrunsystems.com) - 18 production-tested packages for FastAPI applications including authentication, configuration, logging, CORS, rate limiting, database pooling, LLM orchestration, RBAC, caching, resilience patterns, validation, WebSocket management, and testing fixtures.
+Open source Python libraries from [Netrun Systems](https://netrunsystems.com) - 19 production-tested packages for FastAPI applications including authentication, configuration, logging, CORS, rate limiting, database pooling, LLM orchestration, RBAC, caching, resilience patterns, validation, WebSocket management, testing fixtures, and emotion detection.
 
 > **v2.0.0 Release** - Now with PEP 420 namespace packages! Use `from netrun.auth import ...` instead of `from netrun_auth import ...`. Old imports still work but are deprecated.
 
@@ -14,6 +14,7 @@ Open source Python libraries from [Netrun Systems](https://netrunsystems.com) - 
 | **netrun-config** | 2.0.0 | [PyPI](https://pypi.org/project/netrun-config/) | Configuration management with Azure Key Vault, TTL caching |
 | **netrun-cors** | 2.0.0 | [PyPI](https://pypi.org/project/netrun-cors/) | Enterprise CORS middleware presets for FastAPI |
 | **netrun-db-pool** | 2.0.0 | [PyPI](https://pypi.org/project/netrun-db-pool/) | Async database connection pooling with tenant isolation |
+| **netrun-dee** | 1.0.0 | [PyPI](https://pypi.org/project/netrun-dee/) | Digital Emotion Equivalents — emotion detection and ECI scoring for AI text |
 | **netrun-dogfood** | 2.0.0 | [PyPI](https://pypi.org/project/netrun-dogfood/) | Internal integration testing MCP server |
 | **netrun-env** | 2.0.0 | [PyPI](https://pypi.org/project/netrun-env/) | Schema-based environment variable validator |
 | **netrun-errors** | 2.0.0 | [PyPI](https://pypi.org/project/netrun-errors/) | Unified error handling for FastAPI applications |
@@ -42,9 +43,9 @@ pip install netrun-cache netrun-resilience netrun-validation netrun-websocket
 # With optional dependencies
 pip install netrun-auth[all] netrun-llm[all] netrun-cache[redis] netrun-websocket[all]
 
-# Full suite (18 packages)
+# Full suite (19 packages)
 pip install netrun-core netrun-auth netrun-cache netrun-config netrun-cors \
-    netrun-db-pool netrun-dogfood netrun-env netrun-errors netrun-llm \
+    netrun-db-pool netrun-dee netrun-dogfood netrun-env netrun-errors netrun-llm \
     netrun-logging netrun-oauth netrun-pytest-fixtures netrun-ratelimit \
     netrun-rbac netrun-resilience netrun-validation netrun-websocket
 ```

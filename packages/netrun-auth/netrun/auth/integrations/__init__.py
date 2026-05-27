@@ -37,14 +37,18 @@ from netrun.auth.integrations.azure_ad_b2c import (
     extract_bearer_token,
     is_b2c_configured,
 )
-from netrun.auth.integrations.oauth import (
-    OAuthProvider,
-    OAuthConfig,
-    OAuthClient,
-    OAuthManager,
-    get_oauth_manager,
-    create_oauth_router,
-)
+try:
+    from netrun.auth.integrations.oauth import (
+        OAuthProvider,
+        OAuthConfig,
+        OAuthClient,
+        OAuthManager,
+        get_oauth_manager,
+        create_oauth_router,
+    )
+except ImportError:
+    # authlib is an optional dependency (install netrun-auth[oauth])
+    pass
 
 __all__ = [
     # Azure AD (Standard/Entra ID)

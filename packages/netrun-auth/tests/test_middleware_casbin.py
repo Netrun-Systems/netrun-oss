@@ -7,6 +7,7 @@ Date: 2025-12-03
 """
 
 import pytest
+import pytest_asyncio
 
 # Skip all tests if dependencies not installed
 pytest.importorskip("casbin")
@@ -25,7 +26,7 @@ from netrun.auth.middleware_casbin import (
 from netrun.auth.types import User
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def casbin_manager():
     """Create and initialize Casbin RBAC manager."""
     manager = CasbinRBACManager(multi_tenant=False)

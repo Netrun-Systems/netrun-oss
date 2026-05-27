@@ -36,3 +36,4 @@ warnings.warn(
 # Re-export all public APIs from netrun.env
 from netrun.env import *
 from netrun.env import __all__
+from netrun.env import __version__  # noqa: F401 — required by netrun_env.cli

@@ -6,7 +6,7 @@ Tests role hierarchy, permission mappings, and role validation
 
 import pytest
 
-from netrun.rbac.models import Role, Permission, RoleHierarchy, RoleAssignment
+from netrun.rbac.models_legacy import Role, Permission, RoleHierarchy, RoleAssignment
 
 
 class TestRole:

@@ -51,10 +51,10 @@ class TestKeyVaultMixinMocked:
     @pytest.fixture
     def mock_azure_sdk(self):
         """Mock Azure SDK components."""
-        with patch("netrun_config.keyvault.AZURE_AVAILABLE", True), patch(
-            "netrun_config.keyvault.SecretClient"
+        with patch("netrun.config.keyvault.AZURE_AVAILABLE", True), patch(
+            "netrun.config.keyvault.SecretClient"
         ) as mock_client, patch(
-            "netrun_config.keyvault.DefaultAzureCredential"
+            "netrun.config.keyvault.DefaultAzureCredential"
         ) as mock_credential:
             mock_secret = Mock()
             mock_secret.value = "keyvault_secret_value"
@@ -138,10 +138,10 @@ class TestKeyVaultMixinResourceNotFound:
         """Mock Azure SDK with ResourceNotFoundError."""
         from azure.core.exceptions import ResourceNotFoundError
 
-        with patch("netrun_config.keyvault.AZURE_AVAILABLE", True), patch(
-            "netrun_config.keyvault.SecretClient"
+        with patch("netrun.config.keyvault.AZURE_AVAILABLE", True), patch(
+            "netrun.config.keyvault.SecretClient"
         ) as mock_client, patch(
-            "netrun_config.keyvault.DefaultAzureCredential"
+            "netrun.config.keyvault.DefaultAzureCredential"
         ):
             mock_client.return_value.get_secret.side_effect = ResourceNotFoundError(
                 "Secret not found"
@@ -168,12 +168,12 @@ class TestKeyVaultMixinCredentials:
     @pytest.fixture
     def mock_credential_selection(self):
         """Mock credential classes."""
-        with patch("netrun_config.keyvault.AZURE_AVAILABLE", True), patch(
-            "netrun_config.keyvault.ManagedIdentityCredential"
+        with patch("netrun.config.keyvault.AZURE_AVAILABLE", True), patch(
+            "netrun.config.keyvault.ManagedIdentityCredential"
         ) as mock_managed, patch(
-            "netrun_config.keyvault.DefaultAzureCredential"
+            "netrun.config.keyvault.DefaultAzureCredential"
         ) as mock_default, patch(
-            "netrun_config.keyvault.SecretClient"
+            "netrun.config.keyvault.SecretClient"
         ):
             yield {"managed": mock_managed, "default": mock_default}
 
@@ -278,10 +278,10 @@ class TestKeyVaultErrorHandling:
     @pytest.fixture
     def mock_azure_generic_error(self):
         """Mock Azure SDK with generic exception."""
-        with patch("netrun_config.keyvault.AZURE_AVAILABLE", True), patch(
-            "netrun_config.keyvault.SecretClient"
+        with patch("netrun.config.keyvault.AZURE_AVAILABLE", True), patch(
+            "netrun.config.keyvault.SecretClient"
         ) as mock_client, patch(
-            "netrun_config.keyvault.DefaultAzureCredential"
+            "netrun.config.keyvault.DefaultAzureCredential"
         ):
             mock_client.return_value.get_secret.side_effect = Exception(
                 "Network error"

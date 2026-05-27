@@ -154,7 +154,7 @@ class TestAzureADClient:
         mock_jwks.get_signing_key_from_jwt.return_value = mock_signing_key
         azure_client._jwks_client = mock_jwks
 
-        with patch('netrun_auth.integrations.azure_ad.jwt.decode') as mock_decode:
+        with patch('netrun.auth.integrations.azure_ad.jwt.decode') as mock_decode:
             mock_decode.return_value = {
                 "oid": "test-user-id",
                 "sub": "test-subject",
@@ -178,7 +178,7 @@ class TestAzureADClient:
         mock_jwks.get_signing_key_from_jwt.return_value = mock_signing_key
         azure_client._jwks_client = mock_jwks
 
-        with patch('netrun_auth.integrations.azure_ad.jwt.decode') as mock_decode:
+        with patch('netrun.auth.integrations.azure_ad.jwt.decode') as mock_decode:
             mock_decode.return_value = {
                 "email": "test@example.com",
                 "tid": "test-tenant-id"
@@ -199,7 +199,7 @@ class TestAzureADClient:
         mock_jwks.get_signing_key_from_jwt.return_value = mock_signing_key
         azure_client._jwks_client = mock_jwks
 
-        with patch('netrun_auth.integrations.azure_ad.jwt.decode') as mock_decode:
+        with patch('netrun.auth.integrations.azure_ad.jwt.decode') as mock_decode:
             mock_decode.return_value = {
                 "oid": "test-user-id",
                 "sub": "test-subject",

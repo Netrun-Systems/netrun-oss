@@ -10,14 +10,14 @@ from .base import BaseOAuthAdapter, PostResult, TokenData
 from .microsoft import MicrosoftAdapter
 from .google import GoogleAdapter
 from .salesforce import SalesforceAdapter
-from .hubspot import HubSpotAdapter
-from .quickbooks import QuickBooksAdapter
+from .hubspot import HubspotAdapter as HubSpotAdapter
+from .quickbooks import QuickbooksAdapter as QuickBooksAdapter
 from .xero import XeroAdapter
 from .meta import MetaAdapter
 from .mailchimp import MailchimpAdapter
 from .slack import SlackAdapter
 from .zoom import ZoomAdapter
-from .docusign import DocuSignAdapter
+from .docusign import DocusignAdapter as DocuSignAdapter
 from .dropbox import DropboxAdapter
 
 __all__ = [

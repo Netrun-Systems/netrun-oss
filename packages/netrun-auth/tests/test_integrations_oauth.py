@@ -15,6 +15,7 @@ Date: 2025-11-25
 """
 
 import pytest
+pytest.importorskip("authlib", reason="authlib not installed; skipping OAuth integration tests (install netrun-auth[oauth])")
 from unittest.mock import Mock, patch, AsyncMock
 
 from netrun.auth.integrations.oauth import (

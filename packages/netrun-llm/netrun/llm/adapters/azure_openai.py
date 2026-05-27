@@ -30,6 +30,9 @@ except ImportError:
     AZURE_AVAILABLE = False
     AzureOpenAI = None
     DefaultAzureCredential = None
+    OpenAIError = Exception
+    RateLimitError = Exception
+    APIError = Exception
 
 from .base import BaseLLMAdapter, AdapterTier, LLMResponse
 

@@ -28,7 +28,12 @@ import hashlib
 import base64
 
 import httpx
-from authlib.integrations.httpx_client import AsyncOAuth2Client
+try:
+    from authlib.integrations.httpx_client import AsyncOAuth2Client
+except ImportError as _authlib_err:
+    raise ImportError(
+        "OAuthClient requires 'authlib'. Install with: pip install netrun-auth[oauth]"
+    ) from _authlib_err
 
 from netrun.auth.core.exceptions import (
     AuthenticationError,

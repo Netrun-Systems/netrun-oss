@@ -2,19 +2,22 @@
 Async Utilities for Pytest Testing
 Netrun Systems - Service #70 Unified Test Fixtures
 
-Provides session-scoped event loop fixtures for async testing.
-Addresses 71% duplication across Service_* test suites.
+Provides async testing utilities compatible with pytest-asyncio 0.23+.
 
 Usage:
     Simply install the package and pytest-asyncio will use these fixtures automatically.
 
     @pytest.mark.asyncio
-    async def test_async_operation(event_loop):
+    async def test_async_operation():
         result = await some_async_function()
         assert result == expected
 
 Fixtures:
-    - event_loop: Session-scoped asyncio event loop for all async tests
+    - new_event_loop: Fresh event loop for isolated tests
+
+Note (v2.1.1): The custom session-scoped event_loop fixture was removed because
+it conflicts with pytest-asyncio >= 0.23 which deprecated event_loop overrides.
+Use @pytest.mark.asyncio(loop_scope="session") for session-scoped async tests instead.
 """
 
 import asyncio
@@ -31,30 +34,6 @@ try:
 except ImportError:
     import logging
     _logger = logging.getLogger(__name__)
-
-
-@pytest.fixture(scope="session")
-def event_loop() -> Generator[asyncio.AbstractEventLoop, None, None]:
-    """
-    Create session-scoped event loop for async tests.
-
-    This fixture addresses the 71% duplication of event_loop fixtures
-    across Service_* test suites. Using session scope prevents creating
-    multiple event loops during a test session, improving test performance
-    and preventing event loop management issues.
-
-    Yields:
-        asyncio.AbstractEventLoop: Event loop for async test execution
-
-    Example:
-        @pytest.mark.asyncio
-        async def test_database_query(event_loop, async_db_session):
-            result = await async_db_session.execute(query)
-            assert result is not None
-    """
-    loop = asyncio.get_event_loop_policy().new_event_loop()
-    yield loop
-    loop.close()
 
 
 @pytest.fixture

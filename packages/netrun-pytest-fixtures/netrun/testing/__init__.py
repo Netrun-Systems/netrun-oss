@@ -61,7 +61,6 @@ _logger.debug("netrun-pytest-fixtures initialized", version=__version__)
 # Pytest will auto-discover these when package is installed as plugin
 
 from .async_utils import (
-    event_loop,
     new_event_loop,
 )
 
@@ -160,7 +159,6 @@ __all__ = [
     "__license__",
 
     # Async utilities
-    "event_loop",
     "new_event_loop",
 
     # Authentication
