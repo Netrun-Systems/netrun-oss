@@ -35,7 +35,7 @@
 | netrun-touch-ui | (TS) | ts | touch/mobile component library |
 
 ## Workstream 0 — Housekeeping (P0, fast)
-- [ ] **Remove `packages/netrun-dogfood/nul`** — unblocks Windows checkout + local dev on this workstation. (Can be done via `gh api` without a local checkout.)
+- [x] **Remove `packages/netrun-dogfood/nul`** — DONE 2026-09-21 (commit `fb56d39`); Windows checkout unblocked.
 - [ ] **Add `netrun-touch-ui` to the README** package table (currently undocumented).
 - [ ] **Backfill GitHub Releases + tags** for the versions already on PyPI (v2.0.0, v2.1, rbac v3.0.0) so history is traceable.
 
