@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "netrun-errors"
-version = "2.0.0"
+version = "2.1.0"
 description = "Unified error handling for Netrun Systems FastAPI applications"
 readme = "README.md"
 license = { text = "MIT" }

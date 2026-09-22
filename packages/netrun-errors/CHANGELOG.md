@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2026-09-22
+
+### Added
+- `safe_http_error(status, public_prefix, exc)` helper (`netrun.errors.safe_http_error`).
+  Builds an `HTTPException` whose `detail` NEVER contains raw exception text —
+  the full exception is logged server-side with a fresh 12-hex correlation id,
+  and the client receives only `"<public_prefix> (ref: <id>)"`. Closes the
+  API-key-leak class where upstream exception messages (e.g. an `httpx`
+  `ValueError` on an `x-goog-api-key` header rejection) embed provider secrets
+  and get echoed to anonymous callers. Back-ported (audit row **B1**) from
+  `wilbur:charlotte/api/_safe_errors.py`, where the pattern has 21 production
+  usages. Integrates with `netrun-logging` when installed, falls back to stdlib
+  `logging` otherwise. Pure addition — no breaking changes.
+- Regression test asserting the response body contains no substring of
+  `str(exc)` when a secret-bearing exception is passed.
+
 ## [1.0.0] - 2025-12-04
 
 ### Added

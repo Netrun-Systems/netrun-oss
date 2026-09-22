@@ -8,9 +8,14 @@ A comprehensive error handling library for FastAPI applications with:
 - Global exception handlers
 - Request/response logging middleware
 
-Version: 1.1.0
+Version: 2.1.0
 Author: Netrun Systems
 License: MIT
+
+v2.1.0 Changes:
+- Added safe_http_error() helper (B1 back-port): build an HTTPException that
+  never echoes raw exception text, closing the API-key-leak class where
+  upstream exception messages embed provider secrets.
 
 v1.1.0 Changes:
 - Added netrun-logging integration for correlation ID consistency
@@ -21,7 +26,7 @@ v1.1.0 Changes:
 - Updated handlers to use netrun-logging when available
 """
 
-__version__ = "1.1.0"
+__version__ = "2.1.0"
 
 # Base exception
 from .base import NetrunException
@@ -51,6 +56,9 @@ from .service import (
     ExternalServiceError,
 )
 
+# Safe HTTP error helper (never leaks raw exception text)
+from .safe import safe_http_error
+
 # Exception handlers
 from .handlers import install_exception_handlers
 
@@ -79,6 +87,8 @@ __all__ = [
     "BadGatewayError",
     "GatewayTimeoutError",
     "ExternalServiceError",
+    # Safe HTTP error helper
+    "safe_http_error",
     # Handlers
     "install_exception_handlers",
     # Middleware
