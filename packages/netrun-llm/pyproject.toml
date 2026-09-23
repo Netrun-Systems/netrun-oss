@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "netrun-llm"
-version = "2.0.0"
+version = "2.1.0"
 description = "Multi-provider LLM orchestration with fallback chains and three-tier cognition"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -62,12 +62,18 @@ gemini = [
 logging = [
     "netrun-logging>=2.0.0",
 ]
+operator = [
+    "pyyaml>=6.0",
+    "boto3>=1.28.0",
+]
 all = [
     "anthropic>=0.25.0",
     "openai>=1.0.0",
     "azure-identity>=1.16.0",
     "google-generativeai>=0.8.3",
     "netrun-logging>=2.0.0",
+    "pyyaml>=6.0",
+    "boto3>=1.28.0",
 ]
 dev = [
     "pytest>=7.0.0",

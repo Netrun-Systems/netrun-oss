@@ -25,6 +25,17 @@ from dataclasses import dataclass, field
 
 from netrun.llm.adapters.base import BaseLLMAdapter, LLMResponse
 from netrun.llm.exceptions import AllAdaptersFailedError
+from netrun.llm.redaction import redact_exception, redact_secrets
+
+# B4: Long-context escalation (Flash -> Pro past the recall window).
+# Default is OFF; enable per-chain via LLMFallbackChain(long_context_escalation=True).
+# See wilbur:charlotte/config/MODEL_USE_CASE_PATTERNS.md "Long-Context Escalation Rules".
+DEFAULT_LONG_CONTEXT_THRESHOLD = 500_000  # Flash's verified recall window (tokens)
+DEFAULT_ESCALATION_MAP = {
+    "gemini-1.5-flash": "gemini-1.5-pro",
+    "gemini-2.5-flash": "gemini-2.5-pro",
+    "flash": "pro",
+}
 
 # Optional netrun-logging integration
 _use_netrun_logging = False
@@ -121,6 +132,9 @@ class LLMFallbackChain:
         adapters: Optional[List[BaseLLMAdapter]] = None,
         stop_on_success: bool = True,
         log_fallbacks: bool = True,
+        long_context_escalation: bool = False,
+        long_context_threshold: int = DEFAULT_LONG_CONTEXT_THRESHOLD,
+        long_context_escalation_map: Optional[Dict[str, str]] = None,
     ):
         """
         Initialize fallback chain with adapters.
@@ -130,10 +144,31 @@ class LLMFallbackChain:
                      If None, creates default chain: Claude -> OpenAI -> Ollama
             stop_on_success: Stop trying adapters after first success (default: True)
             log_fallbacks: Log when fallback is triggered (default: True)
+            long_context_escalation: Opt-in (default: False). When True, prompts
+                whose estimated input tokens exceed ``long_context_threshold`` are
+                escalated from a Flash-class model to its Pro-class peer before
+                dispatch, emitting ``event=model_escalated reason=long_ctx``.
+                Off by default so existing chains are unaffected (B4 back-port).
+            long_context_threshold: Token count above which escalation fires
+                (default: 500,000 — Flash's verified recall window).
+            long_context_escalation_map: Model-name rewrite map (Flash -> Pro).
+                Defaults to gemini-1.5/2.5-flash -> pro plus a generic
+                "flash" -> "pro" substring transform.
         """
         self.adapters: List[BaseLLMAdapter] = adapters or self._create_default_chain()
         self.stop_on_success = stop_on_success
         self.log_fallbacks = log_fallbacks
+
+        # B4: long-context escalation config (opt-in).
+        self.long_context_escalation = long_context_escalation
+        self.long_context_threshold = long_context_threshold
+        self.long_context_escalation_map = (
+            long_context_escalation_map
+            if long_context_escalation_map is not None
+            else dict(DEFAULT_ESCALATION_MAP)
+        )
+        # Observable record of escalations performed (also useful for tests).
+        self.escalation_events: List[Dict[str, Any]] = []
 
         # Metrics tracking
         self.metrics = ChainMetrics()
@@ -159,6 +194,66 @@ class LLMFallbackChain:
             OllamaAdapter(),
         ]
 
+    def _estimate_input_tokens(
+        self, prompt: str, context: Optional[Dict[str, Any]]
+    ) -> int:
+        """Estimate input tokens. Prefers an explicit ``context['input_tokens']``
+        (e.g. supplied by a real tokenizer); otherwise uses the ~4-chars-per-token
+        heuristic."""
+        if context and context.get("input_tokens") is not None:
+            try:
+                return int(context["input_tokens"])
+            except (TypeError, ValueError):
+                pass
+        return len(prompt) // 4
+
+    def _maybe_escalate_long_context(
+        self, prompt: str, context: Optional[Dict[str, Any]]
+    ) -> Optional[Dict[str, Any]]:
+        """Escalate a Flash-class model to its Pro-class peer when the input is
+        past the recall window (B4). No-op unless ``long_context_escalation`` is
+        enabled. Returns the (possibly-updated) context dict.
+
+        Emits ``event=model_escalated reason=long_ctx from=<m1> to=<m2>
+        tokens=<n>`` and records the event on ``self.escalation_events``.
+        """
+        if not self.long_context_escalation:
+            return context
+
+        tokens = self._estimate_input_tokens(prompt, context)
+        if tokens <= self.long_context_threshold:
+            return context
+
+        new_context: Dict[str, Any] = dict(context or {})
+        model = new_context.get("model")
+
+        target: Optional[str] = None
+        if model:
+            if model in self.long_context_escalation_map:
+                target = self.long_context_escalation_map[model]
+            elif "flash" in model.lower():
+                target = model.lower().replace("flash", "pro")
+        else:
+            # No explicit model: apply the generic flash->pro marker if present.
+            target = self.long_context_escalation_map.get("flash")
+
+        if target and target != model:
+            new_context["model"] = target
+            event = {
+                "event": "model_escalated",
+                "reason": "long_ctx",
+                "from": model,
+                "to": target,
+                "tokens": tokens,
+            }
+            self.escalation_events.append(event)
+            logger.info(
+                f"event=model_escalated reason=long_ctx "
+                f"from={model} to={target} tokens={tokens}"
+            )
+
+        return new_context
+
     def execute(
         self, prompt: str, context: Optional[Dict[str, Any]] = None
     ) -> LLMResponse:
@@ -176,6 +271,8 @@ class LLMFallbackChain:
             AllAdaptersFailedError: If all adapters in chain fail
         """
         self.metrics.total_requests += 1
+        # B4: escalate Flash -> Pro for long-context prompts (opt-in, no-op otherwise).
+        context = self._maybe_escalate_long_context(prompt, context)
         errors: Dict[str, str] = {}
         failed_adapters: List[str] = []
         fallback_count = 0
@@ -239,8 +336,11 @@ class LLMFallbackChain:
                     return response
 
                 else:
-                    # Non-success response (rate_limited, error, timeout)
-                    errors[adapter_name] = response.error or response.status
+                    # Non-success response (rate_limited, error, timeout).
+                    # B6: redact any secrets before storing/propagating.
+                    errors[adapter_name] = redact_secrets(
+                        response.error or response.status
+                    )
                     failed_adapters.append(adapter_name)
                     fallback_count += 1
 
@@ -251,13 +351,16 @@ class LLMFallbackChain:
                         )
 
             except Exception as e:
-                errors[adapter_name] = str(e)
+                # B6: never let a raw provider exception (which may embed an API
+                # key, e.g. an httpx x-goog-api-key rejection) bubble out.
+                errors[adapter_name] = redact_exception(e)
                 failed_adapters.append(adapter_name)
                 fallback_count += 1
 
                 if self.log_fallbacks:
                     logger.warning(
-                        f"Fallback triggered: {adapter_name} raised exception: {e}"
+                        f"Fallback triggered: {adapter_name} raised exception: "
+                        f"{redact_exception(e)}"
                     )
 
         # All adapters failed
@@ -292,6 +395,8 @@ class LLMFallbackChain:
             AllAdaptersFailedError: If all adapters in chain fail
         """
         self.metrics.total_requests += 1
+        # B4: escalate Flash -> Pro for long-context prompts (opt-in, no-op otherwise).
+        context = self._maybe_escalate_long_context(prompt, context)
         errors: Dict[str, str] = {}
         failed_adapters: List[str] = []
         fallback_count = 0
@@ -324,12 +429,16 @@ class LLMFallbackChain:
                     return response
 
                 else:
-                    errors[adapter_name] = response.error or response.status
+                    # B6: redact secrets before storing/propagating.
+                    errors[adapter_name] = redact_secrets(
+                        response.error or response.status
+                    )
                     failed_adapters.append(adapter_name)
                     fallback_count += 1
 
             except Exception as e:
-                errors[adapter_name] = str(e)
+                # B6: redact any secrets embedded in the provider exception.
+                errors[adapter_name] = redact_exception(e)
                 failed_adapters.append(adapter_name)
                 fallback_count += 1
 

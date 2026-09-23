@@ -5,6 +5,41 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2026-09-22
+
+### Added
+- **Long-context escalation (B4)** in `LLMFallbackChain`: opt-in
+  (`long_context_escalation=True`) automatic Flash -> Pro model bump when a
+  prompt's estimated input exceeds the recall window (`long_context_threshold`,
+  default 500,000 tokens). Emits `event=model_escalated reason=long_ctx
+  from=<m1> to=<m2> tokens=<n>` and records each escalation on
+  `chain.escalation_events`. Off by default — existing chains are unaffected.
+  Back-ported from `wilbur:charlotte/config/MODEL_USE_CASE_PATTERNS.md`
+  ("Long-Context Escalation Rules", 2026-05-28).
+- **Windows-safe gcloud resolver (B4)**: `netrun.llm.gcloud.gcloud_path()`
+  prefers `gcloud.cmd` over the `gcloud` bash shim so gcloud-authenticated
+  fallbacks work under Python `subprocess` on Windows. Back-ported from
+  `wilbur:charlotte/scripts/poll_cloud_models.py::_gcloud_path`.
+- **Operator model-registry drift poller (B4)**:
+  `netrun.llm.tools.poll_cloud_models` surveys Vertex Model Garden + AWS
+  Bedrock and diffs against a registry YAML, non-zero-exiting on drift.
+  Ships under the new `netrun-llm[operator]` extra (pyyaml + boto3); imports
+  are lazy so the base package stays dependency-light. Back-ported from
+  `wilbur:charlotte/scripts/poll_cloud_models.py` (commit 72860fc).
+- `redact_secrets` / `redact_exception` exported from `netrun.llm`.
+
+### Security
+- **Adapter exception secret redaction (B6, P1)**: `LLMFallbackChain.execute()`
+  / `execute_async()` now redact known secret shapes (Google `AIza…` keys,
+  `sk-…`/`sk-ant-…` keys, AWS `AKIA…`, bearer tokens, `x-goog-api-key` /
+  `authorization` / `api_key` header & query-param values) from adapter error
+  and exception messages before they are stored in the error map, logged, or
+  raised in `AllAdaptersFailedError`. Closes the leak class from the
+  2026-06-10 Gemini-key incident, where an `httpx` `x-goog-api-key` rejection
+  embedded the raw key in an exception that bubbled to the caller. Same
+  conceptual fix as netrun-errors' `safe_http_error` (B1), scoped to the LLM
+  layer. New module `netrun.llm.redaction`.
+
 ## [1.0.0] - 2025-12-04
 
 ### Added

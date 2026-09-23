@@ -15,9 +15,12 @@ Features:
 
 v1.1.0: Added netrun-logging integration for structured LLM operation logging
 v2.0.0: Migrated to netrun.llm namespace structure
+v2.1.0: B6 secret redaction on adapter exception paths; B4 long-context
+        escalation (Flash->Pro), Windows-safe gcloud resolver, operator
+        model-registry drift poller (netrun-llm[operator])
 
 Author: Netrun Systems
-Version: 2.0.0
+Version: 2.1.0
 License: MIT
 """
 
@@ -41,6 +44,8 @@ try:
 except ImportError:
     GeminiAdapter = None
 from netrun.llm.chain import LLMFallbackChain
+from netrun.llm.redaction import redact_secrets, redact_exception
+from netrun.llm.gcloud import gcloud_path
 from netrun.llm.cognition import ThreeTierCognition, CognitionTier
 from netrun.llm.config import LLMConfig
 from netrun.llm.exceptions import (
@@ -74,7 +79,7 @@ from netrun.llm.telemetry import (
     configure_telemetry,
 )
 
-__version__ = "2.0.0"
+__version__ = "2.1.0"
 __author__ = "Netrun Systems"
 
 __all__ = [
@@ -89,6 +94,10 @@ __all__ = [
     "GeminiAdapter",  # v2.0: Google Gemini with free tier quota tracking
     # Fallback chain
     "LLMFallbackChain",
+    # v2.1: security redaction (B6) + gcloud resolver (B4)
+    "redact_secrets",
+    "redact_exception",
+    "gcloud_path",
     # Three-tier cognition
     "ThreeTierCognition",
     "CognitionTier",
