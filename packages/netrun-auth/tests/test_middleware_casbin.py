@@ -32,10 +32,11 @@ async def casbin_manager():
     manager = CasbinRBACManager(multi_tenant=False)
     await manager.initialize()
 
-    # Setup permissions
-    await manager.add_permission_for_role("admin", "/api/users", "read")
-    await manager.add_permission_for_role("admin", "/api/users", "create")
-    await manager.add_permission_for_role("user", "/api/projects", "read")
+    # Setup permissions using paths as the default resource mapper returns them
+    # (strips /api prefix): /api/users -> /users, /api/projects -> /projects
+    await manager.add_permission_for_role("admin", "/users", "read")
+    await manager.add_permission_for_role("admin", "/users", "create")
+    await manager.add_permission_for_role("user", "/projects", "read")
     await manager.add_role_for_user("admin_user", "admin")
     await manager.add_role_for_user("regular_user", "user")
 
@@ -47,7 +48,18 @@ def app_with_casbin_middleware(casbin_manager):
     """Create FastAPI app with Casbin middleware."""
     app = FastAPI()
 
-    # Mock authentication middleware (sets request.state.user)
+    # In Starlette >= 1.x, add_middleware() is LIFO: the last middleware added
+    # is the outermost (runs first on requests).  CasbinAuthMiddleware must see
+    # an authenticated user, so we add it FIRST (runs second) and the mock auth
+    # middleware is added SECOND via @app.middleware("http") (runs first).
+    app.add_middleware(
+        CasbinAuthMiddleware,
+        rbac_manager=casbin_manager,
+        excluded_paths=["/health", "/public"],
+    )
+
+    # Mock authentication middleware (sets request.state.user).
+    # Added after add_middleware, so it executes before CasbinAuthMiddleware.
     @app.middleware("http")
     async def mock_auth_middleware(request: Request, call_next):
         # Extract user from header for testing
@@ -59,13 +71,6 @@ def app_with_casbin_middleware(casbin_manager):
             permissions=[],
         )
         return await call_next(request)
-
-    # Add Casbin middleware
-    app.add_middleware(
-        CasbinAuthMiddleware,
-        rbac_manager=casbin_manager,
-        excluded_paths=["/health", "/public"],
-    )
 
     # Test routes
     @app.get("/api/users")
@@ -172,8 +177,8 @@ class TestCasbinAuthMiddleware:
         response = client.get("/api/users", headers={"X-User-ID": "regular_user"})
         assert response.status_code == 403
         assert "X-Permission-Required" in response.headers
-        # Should indicate read permission on /api/users
-        assert "/api/users" in response.headers["X-Permission-Required"]
+        # Default resource mapper strips /api prefix: /api/users -> /users
+        assert "/users" in response.headers["X-Permission-Required"]
 
 
 class TestCustomResourceMappers:
@@ -244,13 +249,22 @@ class TestCasbinMultiTenantMiddleware:
         manager = CasbinRBACManager(multi_tenant=True)
         await manager.initialize()
 
-        # Setup: admin can read users in org1
-        await manager.add_permission_for_role("admin", "users", "read", tenant_id="org1")
+        # Setup: admin can read users in org1.
+        # Route is /users; default resource mapper returns path as-is (no /api prefix to strip).
+        await manager.add_permission_for_role("admin", "/users", "read", tenant_id="org1")
         await manager.add_role_for_user("user123", "admin", tenant_id="org1")
 
-        # Create app with multi-tenant middleware
+        # Create app with multi-tenant middleware.
+        # Starlette LIFO: add_middleware() FIRST = runs SECOND; decorator SECOND = runs FIRST.
         app = FastAPI()
 
+        # CasbinAuthMiddleware added first → it runs second (after user is set)
+        app.add_middleware(
+            CasbinAuthMiddleware,
+            rbac_manager=manager,
+        )
+
+        # mock_auth added second (decorator) → runs first, sets request.state.user
         @app.middleware("http")
         async def mock_auth_middleware(request: Request, call_next):
             request.state.user = User(
@@ -260,11 +274,6 @@ class TestCasbinMultiTenantMiddleware:
                 permissions=[],
             )
             return await call_next(request)
-
-        app.add_middleware(
-            CasbinAuthMiddleware,
-            rbac_manager=manager,
-        )
 
         @app.get("/users")
         async def get_users():
@@ -280,19 +289,22 @@ class TestCasbinMiddlewareEdgeCases:
 
     def test_invalid_user_type_in_state(self):
         """Test that invalid user type raises 500 error."""
+        # Starlette LIFO: add_middleware() FIRST = runs SECOND; decorator SECOND = runs FIRST.
         app = FastAPI()
+        manager = CasbinRBACManager()
 
+        # CasbinAuthMiddleware first → runs second (sees the dict user set by the decorator)
+        app.add_middleware(
+            CasbinAuthMiddleware,
+            rbac_manager=manager,
+        )
+
+        # Decorator added second → runs first, sets invalid user type
         @app.middleware("http")
         async def invalid_user_middleware(request: Request, call_next):
             # Set invalid user type
             request.state.user = {"user_id": "user123"}  # Dict instead of User
             return await call_next(request)
-
-        manager = CasbinRBACManager()
-        app.add_middleware(
-            CasbinAuthMiddleware,
-            rbac_manager=manager,
-        )
 
         @app.get("/api/test")
         async def test_route():
@@ -311,8 +323,16 @@ class TestCasbinMiddlewareEdgeCases:
         manager = CasbinRBACManager()
         await manager.initialize()
 
+        # Starlette LIFO: add_middleware() FIRST = runs SECOND; decorator SECOND = runs FIRST.
         app = FastAPI()
 
+        # CasbinAuthMiddleware first → runs second (after user is set)
+        app.add_middleware(
+            CasbinAuthMiddleware,
+            rbac_manager=manager,
+        )
+
+        # Decorator added second → runs first, sets user
         @app.middleware("http")
         async def mock_auth_middleware(request: Request, call_next):
             request.state.user = User(
@@ -322,11 +342,6 @@ class TestCasbinMiddlewareEdgeCases:
                 permissions=[],
             )
             return await call_next(request)
-
-        app.add_middleware(
-            CasbinAuthMiddleware,
-            rbac_manager=manager,
-        )
 
         @app.get("/test")
         async def test_route():

@@ -242,10 +242,16 @@ class RateLimiter:
 
         # Use custom limits if provided
         if rate is not None or period is not None or burst is not None:
+            effective_rate = rate if rate is not None else self.rate
+            effective_period = period if period is not None else self.period
+            # When burst is not explicitly supplied, default it to the effective rate
+            # so a custom rate=5 call is not accidentally capped by the limiter's
+            # higher default burst (e.g. 100).
+            effective_burst = burst if burst is not None else effective_rate
             bucket = TokenBucket(
-                rate=rate or self.rate,
-                period=period or self.period,
-                burst=burst or self.burst,
+                rate=effective_rate,
+                period=effective_period,
+                burst=effective_burst,
                 backend=self.backend,
             )
             return bucket.consume(full_key, tokens=tokens)
