@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "netrun-auth"
-version = "2.0.0"
+version = "2.1.0"
 description = "Unified authentication library for Netrun Systems portfolio - Service #59"
 authors = [
     {name = "Daniel Garza", email = "daniel@netrunsystems.com"}
