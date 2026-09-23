@@ -29,14 +29,21 @@ from netrun.ratelimit.backends import (
     MemoryBackend,
     RedisBackend,
 )
-from netrun.ratelimit.config import RateLimitConfig
+from netrun.ratelimit.config import (
+    RateLimitConfig,
+    TierLimit,
+    TierLimits,
+    TierResolver,
+    unverified_jwt_tier_resolver,
+    header_tier_resolver,
+)
 from netrun.ratelimit.exceptions import (
     RateLimitError,
     RateLimitExceeded,
     RateLimitBackendError,
 )
 
-__version__ = "2.0.0"
+__version__ = "2.1.0"
 __author__ = "Daniel Garza"
 __email__ = "daniel@netrunsystems.com"
 
@@ -50,6 +57,12 @@ __all__ = [
     "RedisBackend",
     # Config
     "RateLimitConfig",
+    # Tier-driven limits (opt-in)
+    "TierLimit",
+    "TierLimits",
+    "TierResolver",
+    "unverified_jwt_tier_resolver",
+    "header_tier_resolver",
     # Exceptions
     "RateLimitError",
     "RateLimitExceeded",

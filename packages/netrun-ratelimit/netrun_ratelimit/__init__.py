@@ -22,7 +22,7 @@ Migration Guide:
     3. Run tests to verify compatibility
 
 Author: Netrun Systems
-Version: 2.0.0 (Compatibility Shim)
+Version: 2.1.0 (Compatibility Shim)
 Date: 2025-12-18
 """
 import warnings

@@ -5,11 +5,14 @@ Provides automatic rate limiting for all requests with configurable
 key extraction and response handling.
 """
 
-from typing import Callable, Optional, Awaitable, Union
+from typing import Callable, Optional, Awaitable, Union, TYPE_CHECKING
 import time
 
 from netrun_ratelimit.bucket import RateLimiter, RateLimitResult
 from netrun_ratelimit.exceptions import RateLimitExceeded
+
+if TYPE_CHECKING:
+    from netrun.ratelimit.config import TierLimits, TierResolver
 
 
 # Type alias for key functions
@@ -92,6 +95,12 @@ class RateLimitMiddleware:
         exclude_paths: Paths to exclude from rate limiting.
         include_headers: Include rate limit headers in responses.
         on_limited: Custom handler for rate limited requests.
+        tier_limits: Optional TierLimits enabling tier-driven and
+            expensive-operation limits. When None, the limiter's own
+            rate/period is used for every request (classic behavior).
+        tier_resolver: Optional callable mapping a request to a tier name.
+            Only consulted when tier_limits is set; if None, the default
+            tier from tier_limits applies to everyone.
 
     Example:
         from fastapi import FastAPI
@@ -106,6 +115,25 @@ class RateLimitMiddleware:
             key_func=get_user_key,
             exclude_paths=["/health", "/metrics"],
         )
+
+    Tier-driven example (opt-in):
+        from netrun.ratelimit import (
+            RateLimiter, MemoryBackend, RateLimitMiddleware,
+            TierLimit, TierLimits, unverified_jwt_tier_resolver,
+        )
+
+        tiers = TierLimits(
+            {"standard": TierLimit(100, 60), "premium": TierLimit(500, 60)},
+            default_tier="standard",
+            expensive_limit=TierLimit(10, 60),
+            expensive_paths=["/api/ml/", "/api/tenants/{tenant_id}/costs"],
+        )
+        app.add_middleware(
+            RateLimitMiddleware,
+            limiter=RateLimiter(backend=MemoryBackend()),
+            tier_limits=tiers,
+            tier_resolver=unverified_jwt_tier_resolver("tier"),
+        )
     """
 
     def __init__(
@@ -116,6 +144,8 @@ class RateLimitMiddleware:
         exclude_paths: Optional[list[str]] = None,
         include_headers: bool = True,
         on_limited: Optional[Callable[["Request", RateLimitResult], "Response"]] = None,  # noqa: F821
+        tier_limits: Optional["TierLimits"] = None,
+        tier_resolver: Optional["TierResolver"] = None,
     ) -> None:
         self.app = app
         self.limiter = limiter
@@ -123,6 +153,8 @@ class RateLimitMiddleware:
         self.exclude_paths = set(exclude_paths or [])
         self.include_headers = include_headers
         self.on_limited = on_limited
+        self.tier_limits = tier_limits
+        self.tier_resolver = tier_resolver
 
     async def __call__(
         self,
@@ -151,8 +183,21 @@ class RateLimitMiddleware:
         if hasattr(key, "__await__"):
             key = await key
 
-        # Check rate limit
-        result = await self.limiter.acheck(key)
+        # Check rate limit. When tier_limits is configured, resolve a
+        # per-tier / expensive-operation limit and namespace the bucket key by
+        # category so different categories don't share a bucket. Without
+        # tier_limits, this is the classic single-limit behavior.
+        if self.tier_limits is not None:
+            tier_name = self.tier_resolver(request) if self.tier_resolver else None
+            limit_cfg, category = self.tier_limits.limit_for(tier_name, request.url.path)
+            result = await self.limiter.acheck(
+                f"{key}:{category}",
+                rate=limit_cfg.rate,
+                period=limit_cfg.period,
+                burst=limit_cfg.effective_burst,
+            )
+        else:
+            result = await self.limiter.acheck(key)
 
         if not result.allowed:
             # Rate limited
