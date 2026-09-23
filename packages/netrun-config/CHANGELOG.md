@@ -5,6 +5,32 @@ All notable changes to the `netrun-config` package will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2026-09-22
+
+### Added
+
+#### GCP Secret Manager Integration (parity with Azure Key Vault)
+- **GCPSecretManagerProvider**: fetch secret versions from Google Cloud Secret
+  Manager via the `google-cloud-secret-manager` Python SDK. The SDK is a soft
+  dependency — install with `pip install 'netrun-config[gcp]'`. A clear
+  `GCPSecretError` is raised when the SDK is missing, no project id is
+  configured, or a secret resolves empty. A client can be injected for testing.
+- **resolve_database_dsn()**: credential-free DSN resolver with the preference
+  chain `DATABASE_URL` env -> local env password (PGPASSWORD/DB_PASSWORD +
+  host/port/user/dbname) -> GCP Secret Manager. The same call works unchanged
+  on a Cloud Run cron-image (WIF + cloud-sql-proxy), local dev, and CI.
+- **GCPSecretError** exception added to the public surface.
+
+Back-ported (audit row B3, `REUSE-2026-09-21-BACKPORT01`) from the pattern
+DungeonMaster adopted after retiring hardcoded superuser DSNs:
+`DungeonMaster/ml/nba/ingestion/rest_days.py` (`_pg_password()`/`_conn()`) and
+`DungeonMaster/ops/rag_ic_tracker.py` (`_paper_db_url()`). The DungeonMaster
+originals shell out to `gcloud`; this back-port uses the Python SDK instead to
+avoid the "gcloud not found" no-op failure inside container images.
+
+Additive and backward-compatible: no changes to existing consumers; the GCP
+path is inert unless the caller opts in.
+
 ## [1.0.0] - 2025-11-24
 
 ### Added

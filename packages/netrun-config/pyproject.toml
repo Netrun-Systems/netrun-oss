@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "netrun-config"
-version = "2.0.0"
+version = "2.1.0"
 description = "Unified configuration management for Netrun Systems portfolio with TTL caching and multi-vault support"
 authors = [
     {name = "Daniel Garza", email = "daniel@netrunsystems.com"}
@@ -36,6 +36,9 @@ azure = [
     "azure-identity>=1.15.0",
     "azure-keyvault-secrets>=4.8.0",
 ]
+gcp = [
+    "google-cloud-secret-manager>=2.16.0",
+]
 errors = [
     "netrun-errors>=2.0.0",
 ]
@@ -43,7 +46,7 @@ logging = [
     "netrun-logging>=2.0.0",
 ]
 all = [
-    "netrun-config[azure,errors,logging]",
+    "netrun-config[azure,gcp,errors,logging]",
 ]
 dev = [
     "pytest>=7.4.0",

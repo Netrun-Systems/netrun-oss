@@ -33,17 +33,19 @@ Version: 2.0.0
 License: MIT
 """
 
-__version__ = "2.0.0"
+__version__ = "2.1.0"
 
 from .base import BaseConfig, get_settings, reload_settings
 from .cache import CachedSecret, SecretCache, SecretCacheConfig
 from .exceptions import (
     ConfigError,
+    GCPSecretError,
     KeyVaultError,
     ValidationError,
     raise_keyvault_unavailable,
     raise_validation_error,
 )
+from .gcp_secrets import GCPSecretManagerProvider, resolve_database_dsn
 from .keyvault import KeyVaultMixin
 from .multi_vault import MultiVaultClient, VaultConfig
 from .settings_source import (
@@ -62,6 +64,9 @@ __all__ = [
     "reload_settings",
     # Legacy Key Vault (v1.0.0 compatibility)
     "KeyVaultMixin",
+    # GCP Secret Manager (v2.1.0)
+    "GCPSecretManagerProvider",
+    "resolve_database_dsn",
     # TTL Caching (v1.1.0)
     "SecretCache",
     "SecretCacheConfig",
@@ -75,6 +80,7 @@ __all__ = [
     # Exceptions
     "ConfigError",
     "KeyVaultError",
+    "GCPSecretError",
     "ValidationError",
     # Error Factories (v1.2.0)
     "raise_validation_error",

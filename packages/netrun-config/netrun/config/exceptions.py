@@ -44,6 +44,16 @@ class KeyVaultError(ConfigError):
     pass
 
 
+class GCPSecretError(ConfigError):
+    """Exception raised when GCP Secret Manager operations fail.
+
+    Covers a missing google-cloud-secret-manager SDK, an unconfigured
+    project id, or a secret that resolves empty.
+    """
+
+    pass
+
+
 # Standardized error factory functions
 def raise_validation_error(message: str, field: str = None, **kwargs) -> None:
     """
