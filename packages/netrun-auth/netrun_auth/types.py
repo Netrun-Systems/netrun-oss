@@ -134,11 +134,18 @@ class User(BaseModel):
                 # User can read users
                 pass
         """
+        # casbin.Enforcer.enforce() is synchronous in casbin 1.36+; no await needed.
+        # Use domain-based (4-arg) form when a tenant is available (explicit or from user),
+        # and fall back to 3-arg form if the enforcer's model is not domain-aware.
         tenant = tenant_id or self.organization_id
         if tenant:
-            return await enforcer.enforce(self.user_id, tenant, resource, action)
-        else:
-            return await enforcer.enforce(self.user_id, resource, action)
+            try:
+                return enforcer.enforce(self.user_id, tenant, resource, action)
+            except RuntimeError as e:
+                if "invalid request size" not in str(e):
+                    raise
+                # Enforcer uses a 3-arg model (no domain); fall back without tenant
+        return enforcer.enforce(self.user_id, resource, action)
 
 
 class AuthContext(BaseModel):

@@ -25,6 +25,12 @@ try:
     AZURE_AVAILABLE = True
 except ImportError:
     AZURE_AVAILABLE = False
+    # Expose sentinel names so unittest.mock.patch() can find targets even without azure installed.
+    # These are never called when AZURE_AVAILABLE=False; they exist purely as patch anchors.
+    SecretClient = None  # type: ignore[assignment]
+    DefaultAzureCredential = None  # type: ignore[assignment]
+    ManagedIdentityCredential = None  # type: ignore[assignment]
+    ResourceNotFoundError = Exception  # type: ignore[assignment, misc]
     logger.debug("Azure SDK not available. Key Vault integration disabled.")
 
 

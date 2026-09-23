@@ -136,6 +136,9 @@ class TestKeyVaultMixinResourceNotFound:
     @pytest.fixture
     def mock_azure_not_found(self):
         """Mock Azure SDK with ResourceNotFoundError."""
+        # Skip this fixture (and tests that use it) when the azure extra is not installed,
+        # since we need the real ResourceNotFoundError class to configure the side_effect.
+        pytest.importorskip("azure.core.exceptions")
         from azure.core.exceptions import ResourceNotFoundError
 
         with patch("netrun.config.keyvault.AZURE_AVAILABLE", True), patch(

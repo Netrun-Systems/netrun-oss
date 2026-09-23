@@ -16,8 +16,9 @@ import logging
 from typing import List, Optional, Callable, Awaitable
 
 try:
-    from fastapi import Request, HTTPException
+    from fastapi import Request
     from starlette.middleware.base import BaseHTTPMiddleware
+    from starlette.responses import JSONResponse
     from starlette.responses import Response
     _HAS_FASTAPI = True
 except ImportError:
@@ -134,9 +135,11 @@ class CasbinAuthMiddleware(BaseHTTPMiddleware):
             logger.warning(
                 f"Unauthenticated request to {request.method} {request.url.path}"
             )
-            raise HTTPException(
+            # Return JSONResponse directly so the response is not swallowed or re-raised
+            # by Starlette's exception middleware when raised from BaseHTTPMiddleware.dispatch()
+            return JSONResponse(
+                {"detail": "Authentication required. Add AuthenticationMiddleware before CasbinAuthMiddleware."},
                 status_code=401,
-                detail="Authentication required. Add AuthenticationMiddleware before CasbinAuthMiddleware.",
             )
 
         # Ensure user is User object
@@ -144,9 +147,9 @@ class CasbinAuthMiddleware(BaseHTTPMiddleware):
             logger.warning(
                 f"Invalid user type in request.state.user: {type(user)}. Expected User object."
             )
-            raise HTTPException(
+            return JSONResponse(
+                {"detail": "Invalid user context"},
                 status_code=500,
-                detail="Internal authentication error. Invalid user context.",
             )
 
         # Map request to resource and action
@@ -167,9 +170,9 @@ class CasbinAuthMiddleware(BaseHTTPMiddleware):
                 f"Error checking permission for user {user.user_id}: {e}",
                 exc_info=True,
             )
-            raise HTTPException(
+            return JSONResponse(
+                {"detail": "Internal authorization error"},
                 status_code=500,
-                detail="Internal authorization error",
             )
 
         if not has_permission:
@@ -177,9 +180,9 @@ class CasbinAuthMiddleware(BaseHTTPMiddleware):
                 f"Permission denied for user {user.user_id} on {action} {resource} "
                 f"(tenant={tenant_id})"
             )
-            raise HTTPException(
+            return JSONResponse(
+                {"detail": f"Permission denied: {action} on {resource}"},
                 status_code=403,
-                detail=f"Permission denied: {action} on {resource}",
                 headers={
                     "X-Permission-Required": f"{resource}:{action}",
                 },
