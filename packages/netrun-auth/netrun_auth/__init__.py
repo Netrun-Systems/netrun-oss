@@ -22,7 +22,7 @@ Migration Guide:
     3. Run tests to verify compatibility
 
 Author: Netrun Systems
-Version: 2.0.0 (Compatibility Shim)
+Version: 2.1.0 (Compatibility Shim)
 Date: 2025-12-18
 """
 import warnings
@@ -38,3 +38,5 @@ warnings.warn(
 # Re-export all public APIs from netrun.auth
 from netrun.auth import *
 from netrun.auth import __all__
+
+__version__ = "2.1.0"

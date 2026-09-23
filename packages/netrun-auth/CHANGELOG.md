@@ -5,6 +5,48 @@ All notable changes to netrun-auth will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.1.0] - 2026-09-22
+
+### Added - Platform-JWT Alternate Credential Path (audit row B2)
+
+Additive, opt-in support for cross-tenant *platform-admin* authentication via
+short-lived HS256 platform-issued JWTs. Back-ported and generalized from
+`netrun-crm:app/platform_auth.py` (+ its 12-test suite
+`tests/unit/test_platform_auth.py`).
+
+- **`netrun.auth.verify_platform_jwt(token, *, audience, ...)`** — verifies a
+  platform JWT (`iss=sigil-platform`, `ctx=platform-admin`, `actor.email`
+  required, `exp` enforced) and resolves it to a synthetic cross-tenant admin
+  `PlatformPrincipal`. Returns `None` on ANY failure so callers fall through to
+  their normal user-auth path. Never raises on a bad token.
+- **`PlatformPrincipal`** — Pydantic identity with a deterministic
+  `uuid5(namespace, actor.email)` id (stable across calls for audit
+  continuity) and a `.to_user()` converter to `netrun.auth.User`.
+- **`platform_jwt_enabled()`**, **`PLATFORM_JWT_SECRET_ENV`**,
+  **`DEFAULT_PLATFORM_NAMESPACE`** exported.
+
+Generalizations over the CRM source:
+- Env var is **`NETRUN_PLATFORM_JWT_SECRET`** (not the CRM's
+  `KOG_PLATFORM_PROXY_SECRET`).
+- **`audience`** is a required parameter (not hardcoded to `kog-api`); pass
+  `None` to skip audience verification.
+- The uuid5 `namespace` and expected `iss`/`ctx` are overridable per call.
+- Implemented with **PyJWT** (already a netrun-auth dependency) — no new deps.
+
+### Opt-in contract (backward-compatible)
+
+- If `NETRUN_PLATFORM_JWT_SECRET` is unset and no explicit `secret=` is passed,
+  `verify_platform_jwt` is a **strict no-op** (always returns `None`) — existing
+  consumers are unaffected.
+
+### Tests
+
+- Added `tests/test_platform.py` (20 tests): happy path, wrong
+  aud/iss/ctx/signature/expiry rejections, missing/bad `actor`, empty/garbage
+  tokens, **strict no-op when secret unset**, explicit-secret override, uuid5
+  determinism + custom namespace, `audience=None` skip, custom `iss`/`ctx`, and
+  `to_user()` conversion.
+
 ## [1.2.0] - 2025-12-05
 
 ### Added - netrun-logging Integration

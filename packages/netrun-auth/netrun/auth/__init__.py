@@ -55,7 +55,7 @@ Quick Start:
         return {"user_id": user.user_id}
 """
 
-__version__ = "2.0.0"
+__version__ = "2.1.0"
 __author__ = "Netrun Systems"
 
 # Core authentication
@@ -82,6 +82,15 @@ from .types import (
     APIKey,
     Permission,
     Role
+)
+
+# Platform-JWT alternate credential path (opt-in; no-op unless configured)
+from .platform import (
+    PlatformPrincipal,
+    verify_platform_jwt,
+    platform_jwt_enabled,
+    PLATFORM_JWT_SECRET_ENV,
+    DEFAULT_PLATFORM_NAMESPACE,
 )
 
 # Exceptions
@@ -196,6 +205,13 @@ __all__ = [
     "APIKey",
     "Permission",
     "Role",
+
+    # Platform-JWT alternate credential path
+    "PlatformPrincipal",
+    "verify_platform_jwt",
+    "platform_jwt_enabled",
+    "PLATFORM_JWT_SECRET_ENV",
+    "DEFAULT_PLATFORM_NAMESPACE",
 
     # Exceptions
     "AuthenticationError",
