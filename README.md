@@ -27,6 +27,7 @@ Open source Python libraries from [Netrun Systems](https://netrunsystems.com) - 
 | **netrun-resilience** | 1.0.0 | [PyPI](https://pypi.org/project/netrun-resilience/) | Resilience patterns: retry, circuit breaker, timeout, bulkhead |
 | **netrun-validation** | 1.0.0 | [PyPI](https://pypi.org/project/netrun-validation/) | Pydantic validators for network, security, datetime, custom types |
 | **netrun-websocket** | 1.0.0 | [PyPI](https://pypi.org/project/netrun-websocket/) | Production WebSocket management with Redis sessions and JWT |
+| **netrun-touch-ui** | 1.0.0 | [npm](https://www.npmjs.com/) | Touch-first React component library (BentoGrid, BottomNav, BottomSheet, GlassPanel, TouchButton, TouchCard) — **TypeScript / npm, not PyPI** |
 
 ## Installation
 
