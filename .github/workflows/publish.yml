@@ -1,0 +1,50 @@
+name: Publish to PyPI (Trusted Publishing)
+
+# Publishes netrun-oss packages to PyPI via OIDC Trusted Publishing — NO API TOKENS.
+# Triggers: when a GitHub Release is published, or manually (Actions → Run workflow).
+# Each package is its own PyPI project with its own trusted-publisher config.
+# `skip-existing: true` makes re-runs safe — already-published versions are skipped,
+# so cutting a Release only publishes packages whose version is new.
+#
+# ONE-TIME SETUP (per package, on PyPI):
+#   PyPI → the project → Manage → Publishing → "Add a new publisher" → GitHub:
+#     Owner: Netrun-Systems   Repository: netrun-oss   Workflow: publish.yml   Environment: (blank)
+# TO ADD MORE PACKAGES: configure the trusted publisher on PyPI, then add the dir to `matrix.pkg` below.
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write        # REQUIRED — OIDC token for Trusted Publishing
+    strategy:
+      fail-fast: false       # one package failing must not block the others
+      matrix:
+        pkg:
+          - netrun-errors
+          - netrun-config
+          - netrun-auth
+          - netrun-ratelimit
+          - netrun-llm
+    name: publish ${{ matrix.pkg }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Build ${{ matrix.pkg }}
+        run: |
+          python -m pip install --upgrade build
+          python -m build --outdir dist "packages/${{ matrix.pkg }}"
+      - name: Publish ${{ matrix.pkg }} to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist
+          skip-existing: true
