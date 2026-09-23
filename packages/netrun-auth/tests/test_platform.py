@@ -52,8 +52,8 @@ def _make_token(
         "actor": actor
         if actor is not None
         else {
-            "email": "daniel@netrunsystems.com",
-            "tenantId": "19a0c807-948c-4c20-a66d-155caa5558ff",
+            "email": "alice@example.com",
+            "tenantId": "11111111-2222-4333-8444-555566667777",
             "userId": "daniel-user-id",
         },
         "iat": now,
@@ -70,11 +70,11 @@ def test_valid_platform_jwt_returns_principal():
     principal = verify_platform_jwt(_make_token(), audience=_AUD)
     assert principal is not None
     assert isinstance(principal, PlatformPrincipal)
-    assert principal.email == "daniel@netrunsystems.com"
+    assert principal.email == "alice@example.com"
     assert principal.is_superuser is True
     assert "platform-admin" in principal.roles
     assert principal.permissions == ["*"]
-    assert str(principal.tenant_id) == "19a0c807-948c-4c20-a66d-155caa5558ff"
+    assert str(principal.tenant_id) == "11111111-2222-4333-8444-555566667777"
     assert principal.auth_provider == "netrun-platform"
 
 
@@ -83,14 +83,14 @@ def test_stable_principal_id_for_same_email():
     p2 = verify_platform_jwt(_make_token(), audience=_AUD)
     assert p1.id == p2.id
     # Deterministic against the documented namespace + email.
-    assert p1.id == uuid.uuid5(DEFAULT_PLATFORM_NAMESPACE, "daniel@netrunsystems.com")
+    assert p1.id == uuid.uuid5(DEFAULT_PLATFORM_NAMESPACE, "alice@example.com")
 
 
 def test_email_is_normalized_lowercase():
-    token = _make_token(actor={"email": "Ops@Netrunsystems.COM"})
+    token = _make_token(actor={"email": "Ops@example.com"})
     principal = verify_platform_jwt(token, audience=_AUD)
     assert principal is not None
-    assert principal.email == "ops@netrunsystems.com"
+    assert principal.email == "ops@example.com"
 
 
 # --- Rejections (all fall through to None) --------------------------------
@@ -121,7 +121,7 @@ def test_rejects_bad_signature():
 
 
 def test_rejects_missing_actor_email():
-    token = _make_token(actor={"tenantId": "19a0c807-948c-4c20-a66d-155caa5558ff"})
+    token = _make_token(actor={"tenantId": "11111111-2222-4333-8444-555566667777"})
     assert verify_platform_jwt(token, audience=_AUD) is None
 
 
@@ -138,14 +138,14 @@ def test_rejects_completely_random_string():
 # --- Optional / lenient behavior ------------------------------------------
 
 def test_accepts_missing_tenant_id():
-    token = _make_token(actor={"email": "ops@netrunsystems.com"})
+    token = _make_token(actor={"email": "ops@example.com"})
     principal = verify_platform_jwt(token, audience=_AUD)
     assert principal is not None
     assert principal.tenant_id is None
 
 
 def test_bad_tenant_id_is_accepted_with_empty_tenant():
-    token = _make_token(actor={"email": "ops@netrunsystems.com", "tenantId": "not-a-uuid"})
+    token = _make_token(actor={"email": "ops@example.com", "tenantId": "not-a-uuid"})
     principal = verify_platform_jwt(token, audience=_AUD)
     assert principal is not None
     assert principal.tenant_id is None
@@ -190,7 +190,7 @@ def test_custom_namespace_changes_id_deterministically():
     p_default = verify_platform_jwt(_make_token(), audience=_AUD)
     p_custom = verify_platform_jwt(_make_token(), audience=_AUD, namespace=ns)
     assert p_custom.id != p_default.id
-    assert p_custom.id == uuid.uuid5(ns, "daniel@netrunsystems.com")
+    assert p_custom.id == uuid.uuid5(ns, "alice@example.com")
 
 
 def test_custom_expected_iss_and_ctx():

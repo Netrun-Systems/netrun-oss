@@ -192,7 +192,7 @@ def test_user() -> Dict[str, Any]:
     """
     return {
         "id": "user-123",
-        "email": "test@netrunsystems.com",
+        "email": "test@example.com",
         "name": "Test User",
         "organization_id": "org-456",
         "roles": ["user"],
@@ -209,7 +209,7 @@ def admin_user() -> Dict[str, Any]:
     """
     return {
         "id": "admin-001",
-        "email": "admin@netrunsystems.com",
+        "email": "admin@example.com",
         "name": "Admin User",
         "organization_id": "org-456",
         "roles": ["admin", "user"],
@@ -233,7 +233,7 @@ def superadmin_user() -> Dict[str, Any]:
     """
     return {
         "id": "superadmin-001",
-        "email": "superadmin@netrunsystems.com",
+        "email": "superadmin@example.com",
         "name": "Super Admin",
         "organization_id": "org-netrun",
         "roles": ["superadmin", "admin", "user"],

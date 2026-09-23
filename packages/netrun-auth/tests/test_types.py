@@ -87,7 +87,7 @@ class TestUserModel:
         Test that email field is validated.
 
         Should reject: "notanemail", "test@", "@example.com"
-        Should accept: "user@netrunsystems.com"
+        Should accept: "user@example.com"
         """
         pytest.skip("Waiting for netrun_auth.types module")
 
